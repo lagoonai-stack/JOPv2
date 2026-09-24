@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: one_prompt_${RAILS_ENV:-development}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d one_prompt_${RAILS_ENV:-development}" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+      - .env.local
+    environment:
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: one_prompt_${RAILS_ENV:-development}
+      # Full URL so Rails never defaults to a DB named like the user (avoids "database root does not exist")
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/one_prompt_${RAILS_ENV:-development}
+      RAILS_ENV: ${RAILS_ENV:-development}
+      IS_DOCKER: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage_data:/rails/storage
+      - ./tmp/letter_opener_web:/rails/tmp/letter_opener_web
+      - .:/rails
+
+  # Stripe CLI in Docker: forwards webhooks to web:3000. Uses STRIPE_SECRET_KEY from .env.local.
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: one_prompt_stripe
+    env_file:
+      - .env.local
+    command:
+      - listen
+      - "--api-key"
+      - "${STRIPE_SECRET_KEY}"
+      - "--forward-to"
+      - "http://web:3000/webhooks/stripe"
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  storage_data:

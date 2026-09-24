@@ -1,0 +1,80 @@
+-# Video preview panel partial
+-# Locals:
+-#   conversation [ClaudeConversation] - the current conversation
+-#   error [String, nil]               - optional error message to display
+
+#video_preview_panel
+  - if conversation.video_idle?
+    -# empty — placeholder only, no visible UI
+
+  - elsif conversation.video_done?
+    .video-preview
+      .video-preview__done
+        %h3.video-preview__title= t("video.done_title")
+        %p.video-preview__subtitle= t("video.done_subtitle")
+        %a.video-preview__download{ href: conversation.video_file_path, target: "_blank", rel: "noopener noreferrer", download: true }
+          %svg{ xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" }
+            %path{ d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }
+            %polyline{ points: "7 10 12 15 17 10" }
+            %line{ x1: "12", y1: "15", x2: "12", y2: "3" }
+          = t("video.download")
+
+  - elsif conversation.rendering?
+    .video-preview
+      .video-preview__rendering{ data: { controller: "video-status", video_status_conversation_id_value: conversation.id, video_status_url_value: conversation_video_status_path(conversation_id: conversation.id) } }
+        .video-preview__spinner
+          .video-preview__spinner-ring
+        %h3.video-preview__title= t("video.rendering_title")
+        .video-preview__progress-wrap
+          .video-preview__progress-bar
+            .video-preview__progress-fill{ data: { video_status_target: "progressFill" }, style: "width: 0%" }
+          %span.video-preview__progress-label{ data: { video_status_target: "progressLabel" } } 0%
+        %p.video-preview__subtitle{ data: { video_status_target: "statusLabel" } }= t("video.rendering_subtitle")
+
+  - elsif conversation.previewing? && conversation.preview_token_valid?
+    .video-preview
+      .video-preview__player-wrap
+        %h3.video-preview__title= t("video.preview_title")
+        %p.video-preview__subtitle= t("video.preview_subtitle")
+
+        .video-preview__iframe-container
+          %iframe.video-preview__iframe{
+            src: conversation.preview_player_url,
+            title: t("video.preview_iframe_title"),
+            frameborder: "0",
+            allowfullscreen: true,
+            loading: "lazy",
+            sandbox: "allow-scripts allow-same-origin"
+          }
+
+        .video-preview__actions
+          = button_to t("video.approve_btn"), conversation_video_approve_path(conversation_id: conversation.id),
+              method: :post,
+              class: "video-preview__btn video-preview__btn--approve",
+              data: { turbo_confirm: t("video.approve_confirm") }
+
+          = button_to t("video.regenerate_btn"), conversation_video_preview_path(conversation_id: conversation.id),
+              method: :post,
+              class: "video-preview__btn video-preview__btn--secondary"
+
+
+
+  - elsif conversation.spec_ready?
+    .video-preview
+      .video-preview__spec-ready
+        %h3.video-preview__title= t("video.spec_ready_title")
+        %p.video-preview__subtitle= t("video.spec_ready_subtitle")
+
+        = button_to t("video.preview_btn"), conversation_video_preview_path(conversation_id: conversation.id),
+            method: :post,
+            class: "video-preview__btn video-preview__btn--primary",
+            data: { turbo: true }
+
+  - elsif conversation.video_error?
+    .video-preview
+      .video-preview__error
+        %span.video-preview__error-icon ⚠
+        = t("video.error_message")
+        = button_to t("video.retry_btn"), conversation_video_preview_path(conversation_id: conversation.id),
+            method: :post,
+            class: "video-preview__btn video-preview__btn--secondary video-preview__btn--small"

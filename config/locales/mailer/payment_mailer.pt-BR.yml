@@ -1,0 +1,16 @@
+pt-BR:
+  payment_mailer:
+    payment_success:
+      subject: "Seu Plano Starter Está Ativo 🎬"
+      title: "Pagamento Confirmado"
+      subtitle: "Sua assinatura já está ativa."
+      greeting: "Olá %{name}, seu pagamento foi confirmado com sucesso."
+      per_month: "mês"
+      prompts: "%{count} prompts por mês"
+      tokens: "%{count} tokens por mês"
+      videos_description: "Até 15 vídeos (~4k tokens cada)"
+      access_chat: "Acesso ao chat do Just One Prompt"
+      status: "Status"
+      active: "Ativo"
+      cta: "Abrir Just One Prompt"
+      footer: "Pagamento processado com segurança via Stripe. Não armazenamos dados do seu cartão."

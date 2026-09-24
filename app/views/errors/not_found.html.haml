@@ -1,0 +1,8 @@
+- content_for :title, t("errors.not_found.title")
+.welcome-card
+  %h1= t("errors.not_found.title")
+  %p.subtitle= t("errors.not_found.message")
+  %p.actions
+    = link_to t("errors.not_found.back_home"), root_path, class: "button primary"
+    %br
+    %small= link_to t("nav.home"), root_path, class: "secondary-link"

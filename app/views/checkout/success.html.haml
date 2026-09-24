@@ -1,0 +1,8 @@
+- content_for :title, t("checkout_success.title")
+.welcome-card{ style: "max-width: 480px; margin: 2rem auto;" }
+  %h1= t("checkout_success.title")
+  %p.subtitle= t("checkout_success.message")
+  %p.actions
+    = link_to t("checkout_success.go_chat"), chat_path, class: "button primary"
+    %br
+    %small= link_to t("checkout_success.back_home"), root_path, class: "secondary-link"

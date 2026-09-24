@@ -1,0 +1,26 @@
+-# Header actions partial — rendered inside #chat_header_actions
+-# Locals:
+-#   conversation [ClaudeConversation]
+-#   plan         [Hash, nil]
+
+- has_preview = conversation.spec_ready? || conversation.previewing? || conversation.rendering? || conversation.video_done? || conversation.video_error?
+
+- if has_preview
+  .chat-header__preview-wrap
+    %button.chat-header__btn.chat-header__btn--preview{
+      type: "button",
+      aria: { expanded: "false", haspopup: "true" },
+      data: { chat_page_target: "previewDropdown", action: "click->chat-page#togglePreview" }
+    }
+      %span.chat-header__preview-dot
+      = t("chat.preview_dropdown_btn")
+      %svg.chat-header__preview-chevron{ xmlns: "http://www.w3.org/2000/svg", width: "12", height: "12", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2.5", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" }
+        %polyline{ points: "6 9 12 15 18 9" }
+    .chat-header__preview-panel{ data: { chat_page_target: "previewPanel" } }
+      = render "chat/video_preview", conversation: conversation
+
+= button_tag type: "button", class: "chat-header__btn", data: { action: "click->chat-page#openConversations" } do
+  = t("chat.past_conversations")
+
+- if conversation.active? && !conversation.rendering? && !conversation.video_done?
+  = button_to t("chat.finish_prompt"), finish_chat_path, method: :post, data: { turbo_confirm: t("chat.finish_confirm") }, class: "chat-header__btn chat-header__btn--primary"

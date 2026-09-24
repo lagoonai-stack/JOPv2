@@ -1,0 +1,35 @@
+#!/bin/bash -e
+
+# Wait for PostgreSQL to be ready (avoids "database does not exist" and connection errors)
+wait_for_db() {
+  if [ -n "$DATABASE_URL" ]; then
+    echo "Waiting for PostgreSQL via DATABASE_URL..."
+    until pg_isready -d "$DATABASE_URL" -q 2>/dev/null; do
+      echo "  PostgreSQL is unavailable — sleeping 2s"
+      sleep 2
+    done
+  else
+    local host="${DB_HOST:-localhost}"
+    local user="${DB_USER:-root}"
+    echo "Waiting for PostgreSQL at ${host} (user: ${user})..."
+    until pg_isready -h "$host" -U "$user" -q 2>/dev/null; do
+      echo "  PostgreSQL is unavailable — sleeping 2s"
+      sleep 2
+    done
+  fi
+  echo "PostgreSQL is ready."
+}
+
+wait_for_db
+
+# Ensure database exists and run pending migrations
+echo "Running database setup (create if missing, run pending migrations)..."
+./bin/rails db:prepare
+
+# Remove a stale server.pid left over from a previous container run (the project
+# directory is bind-mounted, so this file survives restarts and otherwise makes
+# Rails refuse to boot with "A server is already running").
+rm -f tmp/pids/server.pid
+
+echo "Starting Rails server for ${RAILS_ENV}..."
+exec "${@}"

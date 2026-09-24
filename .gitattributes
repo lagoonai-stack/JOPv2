@@ -1,0 +1,5 @@
+# Força LF em todos os arquivos de texto (evita CRLF quebrando shebang no Docker/Linux)
+* text=auto eol=lf
+
+# Executáveis: sempre LF
+bin/* text eol=lf

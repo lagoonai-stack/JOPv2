@@ -1,0 +1,106 @@
+!!!
+%html
+  %head
+    %title= content_for(:title) || "Just One Prompt"
+    %meta{ name: "viewport", content: "width=device-width,initial-scale=1" }
+    %meta{ name: "apple-mobile-web-app-capable", content: "yes" }
+    %meta{ name: "application-name", content: "Just One Prompt" }
+    %meta{ name: "mobile-web-app-capable", content: "yes" }
+    = csrf_meta_tags
+    = csp_meta_tag
+    = yield :head
+    :plain
+      <script>
+        (function() {
+          var t = localStorage.getItem('theme');
+          if (t !== 'dark' && t !== 'light')
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        })();
+      </script>
+    %link{ rel: "icon", href: "/icon.png", type: "image/png" }
+    %link{ rel: "icon", href: "/icon.svg", type: "image/svg+xml" }
+    %link{ rel: "apple-touch-icon", href: "/icon.png" }
+    = stylesheet_link_tag "application", "data-turbo-track": "reload"
+    - if page_specific_stylesheet
+      = stylesheet_link_tag page_specific_stylesheet, "data-turbo-track": "reload"
+    = javascript_importmap_tags
+  %body{ data: { controller: "theme" } }
+    %header.page-header
+      %nav.page-header__nav
+        .page-header__left
+          - if user_signed_in? && current_user.subscription_plan.present?
+            = link_to chat_path, class: "page-header__link", style: "display: inline-flex; align-items: center;" do
+              %span.pulsing-dot
+              = t("nav.movie_maker")
+          - else
+            = link_to root_path, class: "page-header__link", style: "display: inline-flex; align-items: center; font-weight: 900; letter-spacing: -0.05em; font-size: 1.25rem;" do
+              %span.pulsing-dot{ style: "background-color: black; margin-right: 12px;" }
+              Just One Prompt
+
+        - other_locale = I18n.locale == :en ? :"pt-BR" : :en
+        .page-header__right
+          %span.theme-toggle-wrap
+            %button.theme-toggle{ type: "button", "aria-label": t("nav.theme_toggle"), data: { action: "click->theme#toggle" } }
+              %span.theme-toggle__icon.theme-toggle__light{ "aria-hidden": "true" }
+                %svg.theme-toggle__svg{ viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" }
+                  %circle{ cx: "12", cy: "12", r: "5" }
+                  %line{ x1: "12", y1: "1", x2: "12", y2: "3" }
+                  %line{ x1: "12", y1: "21", x2: "12", y2: "23" }
+                  %line{ x1: "4.22", y1: "4.22", x2: "5.64", y2: "5.64" }
+                  %line{ x1: "18.36", y1: "18.36", x2: "19.78", y2: "19.78" }
+                  %line{ x1: "1", y1: "12", x2: "3", y2: "12" }
+                  %line{ x1: "21", y1: "12", x2: "23", y2: "12" }
+                  %line{ x1: "4.22", y1: "19.78", x2: "5.64", y2: "18.36" }
+                  %line{ x1: "18.36", y1: "5.64", x2: "19.78", y2: "4.22" }
+              %span.theme-toggle__icon.theme-toggle__dark{ "aria-hidden": "true" }
+                %svg.theme-toggle__svg{ viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" }
+                  %path{ d: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" }
+          %span.page-header__sep{ aria: { hidden: "true" } } ·
+          - if user_signed_in? && current_user.subscription_plan.present?
+            = link_to t("nav.edit_account"), edit_user_registration_path, class: "page-header__link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = button_to t("nav.logout"), destroy_user_session_path, method: :delete, form: { class: "page-header__inline-form" }, class: "page-header__btn-link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            %span.page-header__user
+              = t("nav.signed_in_as")
+              \
+              %strong= current_user.username
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.switch_language"), url_for(locale: other_locale), class: "page-header__link page-header__lang-toggle"
+
+          - elsif user_signed_in?
+            %span.page-header__user
+              = t("nav.signed_in_as")
+              \
+              %strong= current_user.username
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.edit_account"), edit_user_registration_path, class: "page-header__link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = button_to t("nav.logout"), destroy_user_session_path, method: :delete, form: { class: "page-header__inline-form" }, class: "page-header__btn-link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.movie_maker"), chat_path, class: "page-header__link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.switch_language"), url_for(locale: other_locale), class: "page-header__link page-header__lang-toggle"
+
+          - else
+            = link_to t("nav.home"), root_path, class: "page-header__link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.login"), new_user_session_path, class: "page-header__link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.register"), new_user_registration_path, class: "page-header__link"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.get_access"), "#pricing", class: "page-header__link", style: "background: var(--color-button-bg); color: var(--color-button-text); padding: 6px 16px; border-radius: 9999px; text-decoration: none; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;"
+            %span.page-header__sep{ aria: { hidden: "true" } } ·
+            = link_to t("nav.switch_language"), url_for(locale: other_locale), class: "page-header__link page-header__lang-toggle"
+
+
+    - if notice.present? || alert.present?
+      .flash
+        - if notice.present?
+          %p.notice= notice
+        - if alert.present?
+          %p.alert= alert
+
+    %main.main
+      = yield

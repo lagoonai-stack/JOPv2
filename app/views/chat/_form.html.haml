@@ -1,0 +1,5 @@
+= form_with url: chat_path, method: :post, id: "chat_form", class: "chat-form", data: { controller: "chat", action: "submit->chat#submitWithOptimistic", chat_active_value: conversation.active?, thinking_label: t("chat.thinking") } do |f|
+  = f.hidden_field :conversation_id, value: conversation.id if conversation.persisted?
+  .chat-form__row
+    = f.text_area :content, placeholder: conversation.active? ? t("chat.placeholder") : t("chat.placeholder_read_only"), rows: 1, class: "chat-form__input", id: "chat_content", disabled: !conversation.active?, data: { chat_target: "input", action: "keydown->chat#handleKeydown" }
+    = f.submit t("chat.send"), class: "chat-form__submit", disabled: !conversation.active?, data: { chat_target: "submit" }

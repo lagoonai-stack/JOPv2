@@ -1,0 +1,50 @@
+- content_for :title, "Just One Prompt – Chat"
+
+- has_preview = @conversation.spec_ready? || @conversation.previewing? || @conversation.rendering? || @conversation.video_done? || @conversation.video_error?
+
+.chat-page{ data: { controller: "chat-page", action: "click->chat-page#closePreviewOnOutsideClick" } }
+  %header.chat-header
+    - if @plan.blank?
+      %p.chat-usage.chat-usage--none
+        = t("chat.no_plan")
+        = link_to t("chat.choose_plan"), root_path
+    - else
+      .chat-header__top
+        %h1.chat-header__title Just One Prompt
+        #chat_header_actions.chat-header__actions
+          = render "chat/header_actions", conversation: @conversation
+
+      #chat_plan_usage
+        %p.chat-usage
+          = t("chat.plan_label")
+          %strong= @plan[:name]
+          .chat-usage-bar
+            .chat-usage-bar__fill{ style: "width: #{chat_usage_width_percent(@usage[:tokens], @plan[:max_tokens_per_month])}%" }
+          %span.chat-usage__available{ style: "display: block; font-size: 0.8rem; margin-top: 0.25rem;" }
+            = t("chat.usage_percent", percent: chat_usage_display_percent(@usage[:tokens], @plan[:max_tokens_per_month]))
+        - if chat_usage_at_limit?(@usage[:tokens], @plan[:max_tokens_per_month])
+          %span.chat-usage--warning{ style: "color: var(--color-danger); display: block; margin-top: 0.5rem;" }= t("chat.plan_limit_reached")
+
+      - if @conversation.finished? && !@conversation.rendering? && !@conversation.video_done?
+        %p.chat-read-only= t("chat.read_only_conversation")
+
+  #chat_conversations_dropdown.chat-conversations{ data: { chat_page_target: "dropdown" } }
+    .chat-conversations__backdrop{ data: { chat_page_target: "backdrop", action: "click->chat-page#closeConversations" } }
+    .chat-conversations__panel{ data: { chat_page_target: "panel" } }
+      %h3.chat-conversations__title= t("chat.past_conversations")
+      %ul.chat-conversations__list
+        - @conversations.each do |conv|
+          %li.chat-conversations__item
+            = link_to chat_path(conversation_id: conv.id), class: "chat-conversations__link #{'chat-conversations__link--active' if conv.id == @conversation.id}" do
+              = conv.active? ? t("chat.current_conversation") : t("chat.conversation_date", date: l(conv.finished_at || conv.updated_at, format: :short))
+      %button.chat-conversations__close{ type: "button", data: { action: "click->chat-page#closeConversations" } }= t("chat.close")
+
+  #chat_messages.chat-messages{ data: { chat_page_target: "messages" } }
+    - @messages.each do |message|
+      = render "chat/message", message: message
+
+  - unless has_preview
+    = render "chat/video_preview", conversation: @conversation, error: nil
+
+  #chat_form.chat-form-wrap
+    = render "chat/form", conversation: @conversation

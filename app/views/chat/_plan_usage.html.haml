@@ -1,0 +1,10 @@
+#chat_plan_usage
+  %p.chat-usage
+    = t("chat.plan_label")
+    %strong= plan[:name]
+    .chat-usage-bar
+      .chat-usage-bar__fill{ style: "width: #{chat_usage_width_percent(usage[:tokens], plan[:max_tokens_per_month])}%" }
+    %span.chat-usage__available{ style: "display: block; font-size: 0.8rem; margin-top: 0.25rem;" }
+      = t("chat.usage_percent", percent: chat_usage_display_percent(usage[:tokens], plan[:max_tokens_per_month]))
+  - if chat_usage_at_limit?(usage[:tokens], plan[:max_tokens_per_month])
+    %span.chat-usage--warning{ style: "color: var(--color-danger); display: block; margin-top: 0.5rem;" }= t("chat.plan_limit_reached")

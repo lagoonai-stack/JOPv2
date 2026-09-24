@@ -1,0 +1,349 @@
+/*
+ * One Prompt – black & white theme
+ */
+
+:root {
+  --color-bg: #ffffff;
+  --color-bg-alt: #f5f5f5;
+  --color-border: #e0e0e0;
+  --color-text: #111111;
+  --color-text-muted: #555555;
+  --color-link: #111111;
+  --color-link-hover: #333333;
+  --color-button-bg: #111111;
+  --color-button-text: #ffffff;
+  --color-button-hover: #333333;
+  --color-notice-bg: #f0f0f0;
+  --color-notice-border: #111111;
+  --color-alert-bg: #f5f5f5;
+  --color-alert-border: #111111;
+  --color-error-bg: #fafafa;
+  --color-error-border: #333333;
+  --color-danger: #b91c1c;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius: 6px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] {
+  --color-bg: #111111;
+  --color-bg-alt: #1a1a1a;
+  --color-border: #333333;
+  --color-text: #f5f5f5;
+  --color-text-muted: #a3a3a3;
+  --color-link: #f5f5f5;
+  --color-link-hover: #e5e5e5;
+  --color-button-bg: #f5f5f5;
+  --color-button-text: #111111;
+  --color-button-hover: #e5e5e5;
+  --color-notice-bg: #1a1a1a;
+  --color-notice-border: #404040;
+  --color-alert-bg: #1a1a1a;
+  --color-alert-border: #404040;
+  --color-error-bg: #1a1a1a;
+  --color-error-border: #525252;
+  --color-danger: #f87171;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header & nav */
+.page-header {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.75rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 50;
+}
+
+/* Spacer to prevent content from being hidden behind fixed header */
+body {
+  padding-top: 73px;
+  /* approximate height of header */
+}
+
+.page-header__nav {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.page-header__left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1rem;
+}
+
+.page-header__right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1rem;
+  margin-left: auto;
+}
+
+.page-header__sep {
+  color: var(--color-text-muted);
+  margin: 0 0.25rem;
+  user-select: none;
+  font-weight: 400;
+}
+
+.page-header__link {
+  color: var(--color-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.page-header__link:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+.page-header__user {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.page-header__inline-form {
+  display: inline;
+}
+
+.page-header__btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-link);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.page-header__btn-link:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+/* Locale switcher – pill style */
+.page-header__locale {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 2px;
+  box-shadow: var(--shadow);
+}
+
+.page-header__locale-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-text-muted);
+  border-radius: 999px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.page-header__locale-btn:hover {
+  color: var(--color-text);
+}
+
+.page-header__locale-btn--active {
+  background: var(--color-button-bg);
+  color: var(--color-button-text);
+}
+
+.page-header__locale-btn--active:hover {
+  color: var(--color-button-text);
+  background: var(--color-button-hover);
+}
+
+/* Theme toggle: sun icon in light mode, moon icon in dark mode */
+.theme-toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.theme-toggle:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.theme-toggle__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle__svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+[data-theme="light"] .theme-toggle__dark {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle__light {
+  display: none;
+}
+
+/* Flash messages */
+.flash {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  padding-top: 1rem;
+}
+
+.flash .notice,
+.flash .alert {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-notice-border);
+  margin-bottom: 0.5rem;
+}
+
+.flash .notice {
+  background: var(--color-notice-bg);
+  color: var(--color-text);
+}
+
+.flash .alert {
+  background: var(--color-alert-bg);
+  color: var(--color-text);
+  border-color: var(--color-alert-border);
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  width: 100%;
+}
+
+/* Shared card/error pages (checkout success, 404) */
+.welcome-card {
+  max-width: 480px;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.welcome-card .subtitle {
+  color: var(--color-text-muted);
+  margin: 1rem 0;
+}
+
+.welcome-card .actions {
+  margin-top: 1.5rem;
+}
+
+.welcome-card a.button.primary {
+  display: inline-block;
+  padding: 0.6rem 1.25rem;
+  background: var(--color-button-bg);
+  color: var(--color-button-text);
+  text-decoration: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.welcome-card a.button.primary:hover {
+  background: var(--color-button-hover);
+}
+
+.welcome-card .secondary-link {
+  color: var(--color-link);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.welcome-card .secondary-link:hover {
+  text-decoration: underline;
+}
+
+/* Page-specific styles live in their own files: home.css, sign_in.css, sign_up.css, edit_account.css */
+
+
+
+
+/* Pulsing dot animation */
+.pulsing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-button-bg);
+  border-radius: 50%;
+  margin-right: 8px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.pulsing-dot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-button-bg);
+  border-radius: 50%;
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}

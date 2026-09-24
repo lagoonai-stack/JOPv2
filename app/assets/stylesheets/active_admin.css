@@ -1,0 +1,674 @@
+/*
+ * Active Admin styles for Propshaft (no Sprockets/SCSS).
+ * Black & white theme, centered layout, responsive.
+ */
+
+:root {
+  --aa-bg: #fff;
+  --aa-bg-alt: #f5f5f5;
+  --aa-border: #e0e0e0;
+  --aa-text: #111;
+  --aa-text-muted: #555;
+  --aa-header-bg: #111;
+  --aa-header-text: #fff;
+  --aa-sidebar-width: 270px;
+  --aa-page-margin: 30px;
+}
+
+body.active_admin {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--aa-text);
+  background: var(--aa-bg);
+  margin: 0;
+}
+
+body.active_admin * {
+  box-sizing: border-box;
+}
+
+#wrapper {
+  width: 100%;
+  margin: 0 auto;
+}
+
+#content_wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+#header {
+  background: var(--aa-header-bg);
+  color: var(--aa-header-text);
+  padding: 8px var(--aa-page-margin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+}
+
+#header h1,
+#header h1 a {
+  color: var(--aa-header-text);
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+#header ul.tabs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+#header ul.tabs > li a {
+  color: var(--aa-header-text);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: block;
+}
+
+#header ul.tabs > li:hover > a,
+#header ul.tabs > li.current > a {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#utility_nav a {
+  color: var(--aa-header-text);
+  text-decoration: none;
+  padding: 4px 8px;
+}
+
+#title_bar {
+  background: var(--aa-bg-alt);
+  border-bottom: 1px solid var(--aa-border);
+  padding: 12px var(--aa-page-margin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#title_bar h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+#title_bar .action_items a {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--aa-header-bg);
+  color: var(--aa-header-text);
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+#active_admin_content {
+  padding: var(--aa-page-margin);
+  margin: 0;
+}
+
+#active_admin_content.with_sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aa-page-margin);
+}
+
+#active_admin_content.with_sidebar #main_content_wrapper {
+  flex: 1 1 400px;
+  min-width: 0;
+}
+
+#active_admin_content.with_sidebar #sidebar {
+  flex: 0 0 var(--aa-sidebar-width);
+}
+
+#sidebar {
+  padding: 15px;
+  background: var(--aa-bg-alt);
+  border: 1px solid var(--aa-border);
+  border-radius: 6px;
+  max-width: var(--aa-sidebar-width);
+  align-self: start;
+}
+
+#sidebar h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+#sidebar .filter_form input,
+#sidebar .filter_form select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--aa-border);
+  border-radius: 4px;
+}
+
+table.index_table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  border: 1px solid var(--aa-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+table.index_table th {
+  background: var(--aa-bg-alt);
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+table.index_table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--aa-border);
+}
+
+table.index_table tr.even td {
+  background: var(--aa-bg-alt);
+}
+
+/* Index table: actions column – flex layout and button-style links */
+table.index_table td.col-actions,
+table.index_table td:last-child {
+  white-space: nowrap;
+}
+
+table.index_table td.col-actions .member_link,
+table.index_table td:last-child .member_link,
+table.index_table td.col-actions a,
+table.index_table td:last-child a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--aa-header-bg);
+  background: var(--aa-bg);
+  border: 1px solid var(--aa-border);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+table.index_table td.col-actions a:hover,
+table.index_table td:last-child a:hover {
+  background: var(--aa-bg-alt);
+  border-color: var(--aa-text-muted);
+}
+
+table.index_table td.col-actions a:first-of-type,
+table.index_table td:last-child a:first-of-type {
+  margin-left: 0;
+}
+
+table.index_table td.col-actions,
+table.index_table th.col-actions {
+  width: 1%;
+  text-align: right;
+}
+
+table.index_table td.col-actions,
+table.index_table td:last-child {
+  text-align: right;
+}
+
+.badge.badge--tokens {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--aa-text);
+  background: var(--aa-bg-alt);
+  border: 1px solid var(--aa-border);
+  border-radius: 6px;
+}
+
+input[type="submit"],
+a.button {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--aa-header-bg);
+  color: var(--aa-header-text);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.panel {
+  margin-bottom: 20px;
+  border: 1px solid var(--aa-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.panel h3 {
+  margin: 0;
+  padding: 12px 15px;
+  background: var(--aa-bg-alt);
+  border-bottom: 1px solid var(--aa-border);
+  font-size: 1rem;
+}
+
+.panel .panel_contents {
+  padding: 15px;
+}
+
+.dashboard-stat {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.dashboard-stat__unit {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--aa-text-muted);
+  margin-left: 0.25rem;
+}
+
+/* Show page: cleaner layout and token usage */
+.show-page-layout {
+  max-width: 720px;
+}
+
+.show-page-layout .panel {
+  margin-bottom: 24px;
+}
+
+.show-page-layout .panel h3 {
+  padding: 14px 18px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.show-page-layout .panel .panel_contents {
+  padding: 18px 20px;
+}
+
+.show-page-layout .attributes_table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.show-page-layout .attributes_table tr {
+  border-bottom: 1px solid var(--aa-border);
+}
+
+.show-page-layout .attributes_table tr:last-child {
+  border-bottom: none;
+}
+
+.show-page-layout .attributes_table th {
+  width: 180px;
+  padding: 12px 16px 12px 0;
+  font-weight: 500;
+  color: var(--aa-text-muted);
+  font-size: 0.9rem;
+  vertical-align: top;
+}
+
+.show-page-layout .attributes_table td {
+  padding: 12px 0;
+  font-size: 0.95rem;
+}
+
+.panel--tokens .panel_contents {
+  background: var(--aa-bg-alt);
+}
+
+.token-usage-block {
+  padding: 4px 0;
+}
+
+.panel--tokens .attributes_table td {
+  font-weight: 600;
+}
+
+.token-conversations {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--aa-border);
+  font-size: 0.9rem;
+  color: var(--aa-text-muted);
+}
+
+.token-conversations__label {
+  font-weight: 500;
+}
+
+.token-conversations__count {
+  font-weight: 600;
+  color: var(--aa-text);
+}
+
+.flashes .flash {
+  padding: 12px var(--aa-page-margin);
+  margin: 0;
+  border-bottom: 1px solid var(--aa-border);
+}
+
+.flashes .flash_notice {
+  background: #e8f5e9;
+}
+
+.flashes .flash_alert {
+  background: #ffebee;
+}
+
+.pagination {
+  margin: 20px 0;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+  padding: 6px 12px;
+  border: 1px solid var(--aa-border);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--aa-text);
+  background: var(--aa-bg);
+}
+
+.pagination .current {
+  background: var(--aa-header-bg);
+  color: var(--aa-header-text);
+  border-color: var(--aa-header-bg);
+}
+
+#footer {
+  padding: 12px var(--aa-page-margin);
+  color: var(--aa-text-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--aa-border);
+}
+
+.blank_slate {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--aa-text-muted);
+  background: var(--aa-bg-alt);
+  border: 1px dashed var(--aa-border);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+/* Admin login page (logged out) – minimalist, centralized, well styled */
+body.active_admin.logged_out {
+  background: #f7f7f7;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body.active_admin.logged_out #wrapper {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+body.active_admin.logged_out #content_wrapper {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body.active_admin.logged_out #footer:empty {
+  display: none;
+}
+
+body.active_admin.logged_out #active_admin_content {
+  background: #fff;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+body.active_admin.logged_out h2 {
+  margin: 0;
+  padding: 2rem 2rem 0.5rem;
+  background: transparent;
+  color: #111;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+body.active_admin.logged_out #login {
+  padding: 0.5rem 2rem 2rem;
+}
+
+body.active_admin.logged_out #login form fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.active_admin.logged_out #login form fieldset.inputs ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.active_admin.logged_out #login form fieldset.inputs ol li,
+body.active_admin.logged_out #login form .input {
+  margin-bottom: 1.25rem;
+  list-style: none;
+}
+
+body.active_admin.logged_out #login form fieldset.inputs ol li:last-of-type {
+  margin-bottom: 0;
+}
+
+body.active_admin.logged_out #login form fieldset.actions ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.active_admin.logged_out #login form fieldset.actions ol li {
+  margin: 0;
+}
+
+body.active_admin.logged_out #login form .input:last-of-type,
+body.active_admin.logged_out #login form .inputs ol li:last-of-type {
+  margin-bottom: 0;
+}
+
+body.active_admin.logged_out #login form label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+body.active_admin.logged_out #login form input[type="email"],
+body.active_admin.logged_out #login form input[type="password"],
+body.active_admin.logged_out #login form input[type="text"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  background: #fff;
+  color: #111;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.active_admin.logged_out #login form input[type="email"]:focus,
+body.active_admin.logged_out #login form input[type="password"]:focus,
+body.active_admin.logged_out #login form input[type="text"]:focus {
+  outline: none;
+  border-color: #111;
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.08);
+}
+
+body.active_admin.logged_out #login form input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+body.active_admin.logged_out #login form li.boolean label {
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: #555;
+  cursor: pointer;
+}
+
+body.active_admin.logged_out #login form label abbr {
+  text-decoration: none;
+  color: #999;
+}
+
+body.active_admin.logged_out #login form fieldset.actions {
+  margin-top: 1.5rem;
+}
+
+body.active_admin.logged_out #login form input[type="submit"] {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+body.active_admin.logged_out #login form input[type="submit"]:hover {
+  background: #333;
+}
+
+body.active_admin.logged_out #login > a,
+body.active_admin.logged_out .footer_links {
+  display: block;
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+}
+
+body.active_admin.logged_out #login a,
+body.active_admin.logged_out .footer_links a {
+  color: #555;
+  text-decoration: none;
+}
+
+body.active_admin.logged_out #login a:hover,
+body.active_admin.logged_out .footer_links a:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+body.active_admin.logged_out .flash {
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+}
+
+body.active_admin.logged_out .flash_notice {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+body.active_admin.logged_out .flash_alert {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #header {
+    padding: 8px 1rem;
+  }
+
+  #header ul.tabs {
+    width: 100%;
+    order: 3;
+  }
+
+  #title_bar {
+    padding: 12px 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #active_admin_content {
+    padding: 1rem;
+  }
+
+  #active_admin_content.with_sidebar {
+    flex-direction: column;
+  }
+
+  #active_admin_content.with_sidebar #sidebar {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
+
+  #active_admin_content.table_actions {
+    display: flex;
+    justify-content: space-around;
+    vertical-align: middle;
+    align-items: center;
+  }
+
+  table.index_table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  body.active_admin.logged_out {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  body.active_admin.logged_out #active_admin_content {
+    border-radius: 10px;
+  }
+
+  body.active_admin.logged_out h2 {
+    padding: 1.5rem 1.25rem 0.5rem;
+  }
+
+  body.active_admin.logged_out #login {
+    padding: 0.5rem 1.25rem 1.5rem;
+  }
+}

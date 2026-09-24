@@ -1,0 +1,269 @@
+/*
+ * Home page – pricing plans and welcome.
+ */
+
+.pricing-page {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.pricing-hero {
+  text-align: center;
+  padding: 2.5rem 1rem 2rem;
+}
+
+.pricing-hero__title {
+  margin: 0 0 0.5rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pricing-hero__subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 0 1rem 2rem;
+}
+
+.pricing-card {
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pricing-card:hover {
+  border-color: var(--color-text-muted);
+  box-shadow: var(--shadow-lg);
+}
+
+.pricing-card__name {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.pricing-card__price {
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+.pricing-card__currency {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.pricing-card__amount {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pricing-card__period {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.pricing-card__desc {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.pricing-card__features {
+  margin: 0 0 1.5rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  flex: 1;
+}
+
+.pricing-card__features li {
+  margin-bottom: 0.35rem;
+}
+
+.pricing-card__features li.strikethrough {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.pricing-card__cta {
+  margin-top: auto;
+}
+
+.pricing-card__btn {
+  display: inline-block;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-button-text);
+  background: var(--color-button-bg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pricing-card__btn:hover {
+  background: var(--color-button-hover);
+}
+
+.pricing-card__btn--secondary {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+}
+
+.pricing-card__btn--secondary:hover {
+  background: var(--color-border);
+}
+
+.pricing-footer {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+}
+
+.pricing-footer p {
+  margin: 0 0 0.5rem;
+}
+
+.pricing-footer a {
+  color: var(--color-link);
+}
+
+/* Free plan card */
+.pricing-card--free {
+  border-style: dashed;
+  border-color: #22c55e;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.04), rgba(34, 197, 94, 0.01));
+}
+
+.pricing-card--free:hover {
+  border-color: #16a34a;
+}
+
+.pricing-card__badge {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #16a34a;
+  text-align: center;
+}
+
+.pricing-card__note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+@keyframes orbit-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty));
+  }
+}
+
+/* Dark mode: landing page and home sections */
+[data-theme="dark"] .page-home .bg-white {
+  background: var(--color-bg) !important;
+}
+
+[data-theme="dark"] .page-home .bg-zinc-50 {
+  background: var(--color-bg-alt) !important;
+}
+
+[data-theme="dark"] .page-home .text-black {
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .page-home .bg-black {
+  background: var(--color-button-bg) !important;
+}
+
+[data-theme="dark"] .page-home .text-white {
+  color: var(--color-button-text) !important;
+}
+
+[data-theme="dark"] .page-home .border-black\\/20,
+[data-theme="dark"] .page-home .border-black\\/10,
+[data-theme="dark"] .page-home .border-black\\/5 {
+  border-color: var(--color-border) !important;
+}
+
+[data-theme="dark"] .page-home .bg-black\\/5,
+[data-theme="dark"] .page-home .bg-black\\/10 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .page-home .text-glow {
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .page-home .glass {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .page-home .bg-zinc-100 {
+  background: var(--color-bg-alt) !important;
+}
+
+[data-theme="dark"] .page-home .text-zinc-500,
+[data-theme="dark"] .page-home .text-zinc-900 {
+  color: var(--color-text-muted) !important;
+}
+
+[data-theme="dark"] .page-home .group-hover\\:bg-zinc-200:hover,
+[data-theme="dark"] .page-home .group-hover\\:text-zinc-900:hover {
+  background: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .page-home .text-green-600 {
+  color: #4ade80 !important;
+}
+
+[data-theme="dark"] .page-home .via-black\\/20 {
+  --tw-gradient-stops: var(--tw-gradient-from), var(--color-border), var(--tw-gradient-to);
+}

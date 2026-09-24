@@ -1,0 +1,16 @@
+en:
+  payment_mailer:
+    payment_success:
+      subject: "Your Starter Plan is Active 🎬"
+      title: "Payment Confirmed"
+      subtitle: "Your subscription is now active."
+      greeting: "Hi %{name}, your payment was successfully confirmed."
+      per_month: "month"
+      prompts: "%{count} prompts per month"
+      tokens: "%{count} tokens per month"
+      videos_description: "Up to 15 videos (~4k tokens each)"
+      access_chat: "Access to Just One Prompt chat"
+      status: "Status"
+      active: "Active"
+      cta: "Open Just One Prompt"
+      footer: "Secure payment processed via Stripe. We never store your card details."

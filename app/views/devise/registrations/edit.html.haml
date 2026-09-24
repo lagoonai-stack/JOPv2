@@ -1,0 +1,51 @@
+.auth-card
+  %h2= t("auth.edit_title")
+  = form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f|
+    = hidden_field_tag :locale, I18n.locale if I18n.locale != I18n.default_locale
+    = render "devise/shared/error_messages", resource: resource
+
+    .field
+      = f.label :username
+      = f.text_field :username, autofocus: true, autocomplete: "username", class: ("field-with-error" if resource.errors[:username].any?)
+      - resource.errors.full_messages_for(:username).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .field
+      = f.label :email
+      = f.email_field :email, autocomplete: "email", class: ("field-with-error" if resource.errors[:email].any?)
+      - resource.errors.full_messages_for(:email).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    - if devise_mapping.confirmable? && resource.pending_reconfirmation?
+      .field= t("auth.waiting_confirmation", email: resource.unconfirmed_email)
+
+    .field
+      = f.label :password
+      %em= t("auth.password_leave_blank")
+      = f.password_field :password, autocomplete: "new-password", class: ("field-with-error" if resource.errors[:password].any?)
+      - if @minimum_password_length
+        %em= t("auth.password_min_chars", count: @minimum_password_length)
+      - resource.errors.full_messages_for(:password).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .field
+      = f.label :password_confirmation
+      = f.password_field :password_confirmation, autocomplete: "new-password", class: ("field-with-error" if resource.errors[:password_confirmation].any?)
+      - resource.errors.full_messages_for(:password_confirmation).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .field
+      = f.label :current_password
+      %em= t("auth.current_password_hint")
+      = f.password_field :current_password, autocomplete: "current-password", class: ("field-with-error" if resource.errors[:current_password].any?)
+      - resource.errors.full_messages_for(:current_password).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .actions
+      = f.submit t("auth.edit_submit")
+
+  %h3= t("auth.cancel_account")
+  .cancel-account
+    = button_to t("auth.cancel_account"), registration_path(resource_name), data: { confirm: t("auth.cancel_confirm"), turbo_confirm: t("auth.cancel_confirm") }, method: :delete
+
+  = link_to t("auth.back"), root_path, class: "back-link"

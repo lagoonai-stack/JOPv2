@@ -1,0 +1,190 @@
+-# Tailwind CSS CDN (scoped or preflight false ideally, but for now just including)
+%script{src: "https://cdn.tailwindcss.com"}
+%link{href: "https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;800;900&display=swap", rel: "stylesheet"}
+:javascript
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          zinc: {
+            50: '#fafafa',
+            100: '#f4f4f5', // light gray
+            900: '#18181b', // dark gray
+            950: '#09090b', // very dark gray (was black in original)
+          }
+        }
+      },
+      corePlugins: {
+        preflight: false,
+      }
+    }
+  }
+
+:css
+  /* Custom LP Styles */
+  .text-glow {
+    text-shadow: 0 0 40px rgba(0,0,0,0.1); /* Inverted glow */
+  }
+  .glass {
+    background: rgba(0, 0, 0, 0.03); /* Inverted glass */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08); /* Inverted border */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); /* Inverted shadow */
+  }
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+-# Hero Section
+%section.min-h-screen.flex.items-center.justify-center.px-4.pt-4.pb-12.relative.overflow-hidden.bg-white.text-black
+  .max-w-7xl.mx-auto.grid.lg:grid-cols-2.gap-16.items-center
+    -# Text Side
+    .order-2.lg:order-1
+      %h1.text-5xl.md:text-7xl.font-black.tracking-tighter.leading-none.mb-6.text-glow
+        = t('home.landing_page.hero.title')
+        %br
+        = t('home.landing_page.hero.title_br')
+      %p.text-lg.text-black.opacity-80.max-w-lg.font-light.leading-relaxed.mb-8
+        = t('home.landing_page.hero.subtitle')
+
+      %a.px-8.py-4.bg-black.text-white.font-bold.rounded-full.text-lg.shadow-lg.hover:shadow-xl.transition-shadow.inline-block{href: "#pricing"}
+        = t('home.landing_page.hero.cta')
+
+    -# Visual Side
+    .order-1.lg:order-2.relative.h-96.md:h-128.w-full
+      -# Background: The Old Way (Faded)
+      .absolute.inset-0.opacity-20.blur-sm.scale-95.origin-center.grayscale.pointer-events-none
+        .w-full.h-full.border.rounded-xl.p-4.flex.flex-col.gap-2{class: "border-black/20 bg-black/5"}
+          .w-full.h-1.2.border-b.flex.gap-1{class: "border-black/10"}
+            - 3.times do
+              .flex-1.rounded{class: "bg-black/5"}
+          .flex-1.flex.flex-col.gap-2
+            - 5.times do
+              .h-4.rounded.w-2.5.ml-10{class: "bg-black/10"}
+
+      -# Foreground: The New Way
+      .absolute.inset-0.flex.items-center.justify-center
+        .w-full.max-w-md.bg-white.backdrop-blur-2xl.border.rounded-2xl.p-6.shadow-2xl{class: "border-black/20"}
+          .flex.items-center.gap-2.mb-4.opacity-100.text-xs.uppercase.font-mono.tracking-widest
+            %svg.w-3.h-3.text-yellow-500{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", xmlns: "http://www.w3.org/2000/svg"}
+              %path{d: "M13 2L3 14h9l-1 8 10-12h-9l1-8z", "stroke-linecap" => "round", "stroke-linejoin" => "round", "stroke-width" => "2"}
+            = t('home.landing_page.hero.generative_input')
+          .text-xl.md:text-2xl.font-light.text-black.leading-tight
+            = t('home.landing_page.hero.input_placeholder')
+            %span.w-0.5.h-6.bg-black.inline-block.ml-1.animate-pulse.align-middle
+
+-# Problem Section
+%section.py-32.px-4.bg-zinc-50
+  .max-w-6xl.mx-auto
+    .text-center.mb-20
+      %h2.text-4xl.font-bold.mb-4.text-black= t('home.landing_page.problem.title')
+      .h-1.w-20.mx-auto.rounded-full{class: "bg-black/20"}
+
+    .grid.md:grid-cols-3.gap-8
+      - problems = [{icon: "TrendingUp", title: t('home.landing_page.problem.learning_curve.title'), desc: t('home.landing_page.problem.learning_curve.desc')}, {icon: "Clock", title: t('home.landing_page.problem.time_sink.title'), desc: t('home.landing_page.problem.time_sink.desc')}, {icon: "Shield", title: t('home.landing_page.problem.creative_block.title'), desc: t('home.landing_page.problem.creative_block.desc')}]
+      - problems.each do |p|
+        .glass.p-8.rounded-3xl.transition-colors.group{class: "border-black/5 hover:border-black/20"}
+          .w-16.h-16.rounded-2xl.flex.items-center.justify-center.mb-6.transition-all{class: "bg-zinc-100 text-zinc-500 group-hover:text-zinc-900 group-hover:bg-zinc-200"}
+            - if p[:icon] == "TrendingUp"
+              %svg.w-8.h-8{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24"}
+                %polyline{points: "23 6 13.5 15.5 8.5 10.5 1 18", "stroke-width" => "2", "stroke-linecap" => "round", "stroke-linejoin" => "round"}
+                %polyline{points: "17 6 23 6 23 12", "stroke-width" => "2", "stroke-linecap" => "round", "stroke-linejoin" => "round"}
+            - elsif p[:icon] == "Clock"
+              %svg.w-8.h-8{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24"}
+                %circle{cx: "12", cy: "12", r: "10", "stroke-width" => "2"}
+                %polyline{points: "12 6 12 12 16 14", "stroke-width" => "2"}
+            - elsif p[:icon] == "Shield"
+              %svg.w-8.h-8{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24"}
+                %path{d: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", "stroke-width" => "2", "stroke-linecap" => "round", "stroke-linejoin" => "round"}
+          %h3.text-xl.font-bold.mb-4.text-black= p[:title]
+          %p.text-black.opacity-70.leading-relaxed= p[:desc]
+
+    .mt-20.text-center.flex.flex-col.items-center.gap-4
+      .h-20.w-px.bg-gradient-to-b.from-transparent.to-transparent{class: "via-black/20"}
+      %p.text-sm.font-mono.uppercase.tracking-widest.opacity-70.text-black= t('home.landing_page.problem.better_way')
+
+-# Engine Section
+%section.py-32.px-4.overflow-hidden.bg-white.text-black
+  .max-w-7xl.mx-auto
+    .mb-16
+      %h2.text-4xl.font-bold.mb-4!= t('home.landing_page.engine.title')
+      %p.text-black.opacity-70.max-w-xl= t('home.landing_page.engine.subtitle')
+
+    .grid.grid-cols-1.md:grid-cols-2.lg:grid-cols-4.gap-4
+      - styles = [{name: t('home.landing_page.engine.styles.noir.name'), desc: t('home.landing_page.engine.styles.noir.desc'), color: "bg-zinc-900"}, {name: t('home.landing_page.engine.styles.clean.name'), desc: t('home.landing_page.engine.styles.clean.desc'), color: "bg-zinc-100 text-black"}, {name: t('home.landing_page.engine.styles.commercial.name'), desc: t('home.landing_page.engine.styles.commercial.desc'), color: "bg-blue-900"}, {name: t('home.landing_page.engine.styles.geometric.name'), desc: t('home.landing_page.engine.styles.geometric.desc'), color: "bg-purple-900"}]
+      - styles.each do |s|
+        .h-96.rounded-3xl.p-8.flex.flex-col.justify-end.relative.overflow-hidden.group.border.transition-all.cursor-crosshair{class: "border-black/10 hover:border-black/30"}
+          .absolute.inset-0.opacity-20.transition-opacity.group-hover:opacity-30{class: s[:color]}
+          .relative.z-10
+            %h3.text-2xl.font-black.mb-2.text-black= s[:name]
+            %p.text-sm.opacity-80.text-black= s[:desc]
+
+-# Scale Section
+%section.py-32.px-4.bg-zinc-50.border-y.relative.overflow-hidden{class: "border-black/5"}
+  .absolute.inset-0{style: "background: radial-gradient(circle at center, rgba(0,0,0,0.05), transparent 70%);"}
+
+  .max-w-5xl.mx-auto.text-center.relative.z-10
+    .mb-48.flex.justify-center
+      .relative
+        -# Center Icon
+        .w-20.h-20.bg-black.text-white.rounded-2xl.flex.items-center.justify-center.relative.z-20.shadow-2xl
+          %svg.w-10.h-10{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24"}
+            %polygon{points: "12 2 2 7 12 12 22 7 12 2", "stroke-width" => "2"}
+            %polyline{points: "2 17 12 22 22 17", "stroke-width" => "2"}
+            %polyline{points: "2 12 12 17 22 12", "stroke-width" => "2"}
+
+        -# Floating Icons (Simulated with CSS)
+        - 6.times do |i|
+          - angle = i * (Math::PI * 2) / 6
+          - tx = Math.cos(angle) * 150
+          - ty = Math.sin(angle) * 150
+          .absolute.w-12.h-12.-ml-6.-mt-6.bg-white.border.rounded-xl.flex.items-center.justify-center.z-10{style: "--tx: #{tx}px; --ty: #{ty}px; animation: orbit-float 3s infinite #{i * 0.2}s;", class: "top-1/2 left-1/2 border-black/10"}
+            %svg.w-5.h-5.text-black.opacity-70{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24"}
+
+              %rect{x: "2", y: "2", width: "20", height: "20", rx: "2.18", ry: "2.18", "stroke-width" => "2"}
+              %line{x1: "7", y1: "2", x2: "7", y2: "22", "stroke-width" => "2"}
+              %line{x1: "17", y1: "2", x2: "17", y2: "22", "stroke-width" => "2"}
+              %line{x1: "2", y1: "12", x2: "22", y2: "12", "stroke-width" => "2"}
+              %line{x1: "2", y1: "7", x2: "7", y2: "7", "stroke-width" => "2"}
+              %line{x1: "2", y1: "17", x2: "7", y2: "17", "stroke-width" => "2"}
+              %line{x1: "17", y1: "17", x2: "22", y2: "17", "stroke-width" => "2"}
+              %line{x1: "17", y1: "7", x2: "22", y2: "7", "stroke-width" => "2"}
+
+    %h2.text-4xl.md:text-5xl.font-black.mb-6.text-black= t('home.landing_page.scale.title')
+    %p.text-black.opacity-70.text-xl.max-w-2xl.mx-auto
+      = t('home.landing_page.scale.subtitle')
+
+-# Demo Section
+- # Modified controller connection to pass data
+%section.py-32.px-4.bg-white{data: {controller: "landing-page"}}
+  .max-w-4xl.mx-auto
+    .glass.p-8.md:p-12.rounded-3xl.relative.overflow-hidden{class: "border-black/10"}
+      .absolute.top-0.left-0.w-full.h-1.bg-gradient-to-r.from-transparent.to-transparent{class: "via-black/20"}
+
+      .flex.flex-col.gap-8
+        -# Input Simulation
+        %div
+          %label.text-xs.font-mono.uppercase.tracking-widest.text-black.opacity-50.mb-2.block= t('home.landing_page.demo.input_label')
+          .text-2xl.md:text-3xl.font-light.text-black
+            %span{data: {landing_page_target: "input", landing_page_typing_text_value: t('home.landing_page.demo.typing_text')}}
+            %span.animate-pulse |
+
+        -# Output Simulation
+        .rounded-2xl.p-6.border.font-mono.text-sm{class: "bg-black/5 border-black/5 text-black/70"}
+          .flex.justify-between.items-start.mb-4
+            %span.text-green-600= t('home.landing_page.demo.generated_tag')
+            %button.flex.items-center.gap-2.text-xs.font-bold.uppercase.tracking-wider.hover:text-black.transition-colors{data: {action: "landing-page#copyToClipboard", params_text: "/imagine prompt: cinematic luxury real estate tour, slow camera pan, 8k resolution, golden hour lighting, minimalist interior design, marble textures, depth of field --ar 16:9 --v 6.0", landing_page_copied_text_value: t('home.landing_page.demo.copied')}}
+              %svg.w-3.h-3{fill: "none", stroke: "currentColor", viewBox: "0 0 24 24"}
+                %rect{x: "9", y: "9", width: "13", height: "13", rx: "2", ry: "2", "stroke-width" => "2"}
+                %path{d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1", "stroke-width" => "2"}
+              = t('home.landing_page.demo.copy_button')
+
+          %p.leading-relaxed
+            /imagine prompt: cinematic luxury real estate tour, slow camera pan, 8k resolution, golden hour lighting, minimalist interior design, marble textures, depth of field --ar 16:9 --v 6.0
+
+
+-# FAQ Section Removed per request

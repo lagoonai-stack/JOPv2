@@ -1,0 +1,75 @@
+- content_for :title, t("home.title")
+
+.page-home
+  = render "landing_page"
+
+  .pricing-page
+    -# Hero removed as per request
+
+    .pricing-grid{id: "pricing"}
+      -# Card do plano gratuito
+      - free_plan = @plans["free"]
+      - if free_plan
+        %article.pricing-card.pricing-card--free
+          %h2.pricing-card__name= free_plan[:name]
+          %p.pricing-card__price
+            %span.pricing-card__amount= t("home.free_label")
+          - if free_plan[:description].present?
+            %p.pricing-card__desc= free_plan[:description]
+          %ul.pricing-card__features
+            %li
+              %strong= number_with_delimiter(free_plan[:max_tokens_per_month])
+              = t("home.tokens_per_month")
+            %li= t("home.personal_assistant")
+            %li.strikethrough= t("home.priority_support")
+            %li.strikethrough= t("home.discount_future_credits")
+          .pricing-card__cta
+            - if user_signed_in? && current_user.free_plan?
+              = link_to t("home.your_plan"), chat_path, class: "pricing-card__btn pricing-card__btn--secondary"
+            - elsif user_signed_in?
+              %p.pricing-card__note= t("home.free_active_note")
+            - else
+              = link_to t("home.create_account"), new_user_registration_path, class: "pricing-card__btn pricing-card__btn--secondary"
+          %p.pricing-card__badge= t("home.free_badge")
+
+    -# Cards dos planos pagos (controlado por ENV['PAID_PLANS_VISIBLE'])
+      - if ENV.fetch("PAID_PLANS_VISIBLE", "false") == "true"
+        - @plans.reject { |key, _| key == "free" }.each do |key, plan|
+          %article.pricing-card
+            %h2.pricing-card__name= plan[:name]
+            %p.pricing-card__price
+              %span.pricing-card__currency R$
+              %span.pricing-card__amount= number_with_precision(plan[:price_cents] / 100.0, precision: 2, separator: ",", strip_insignificant_zeros: false)
+              %span.pricing-card__period= t("home.per_month")
+            - if plan[:description].present?
+              %p.pricing-card__desc= plan[:description]
+            %ul.pricing-card__features
+              %li
+                %strong= number_with_delimiter(plan[:max_tokens_per_month])
+                = t("home.tokens_per_month")
+              %li= t("home.personal_assistant")
+              %li{class: ("strikethrough" if key == "starter")}
+                = t("home.priority_support")
+              %li{class: ("strikethrough" if key == "starter")}
+                = t("home.discount_future_credits")
+            .pricing-card__cta
+              - if user_signed_in? && current_user.subscription_plan == key
+                = link_to t("home.your_plan"), chat_path, class: "pricing-card__btn"
+              - elsif user_signed_in?
+                = button_to t("home.get_plan", name: plan[:name]), checkout_create_path(plan: key), method: :post, class: "pricing-card__btn", data: { turbo: false }
+              - else
+                = link_to t("home.create_account"), new_user_registration_path, class: "pricing-card__btn"
+
+  %section.pricing-footer
+    %p= t("home.secure_payment")
+    - if user_signed_in?
+      %p
+        = link_to t("home.go_to_chat"), chat_path
+        ·
+        = link_to t("home.edit_account"), edit_user_registration_path
+    - else
+      %p
+        = link_to t("home.already_have_account"), new_user_session_path
+        ·
+        = link_to t("home.register"), new_user_registration_path
+

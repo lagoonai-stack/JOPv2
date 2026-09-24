@@ -1,0 +1,231 @@
+# Português (Brasil)
+pt-BR:
+  hello: "Olá, mundo"
+
+  activerecord:
+    errors:
+      format: "%{attribute} %{message}"
+      messages:
+        blank: "não pode ficar em branco"
+        confirmation: "não é igual a %{attribute}"
+        empty: "não pode ficar vazio"
+        invalid: "não é válido"
+        taken: "já está em uso"
+        too_long:
+          one: "é muito longo (máximo: %{count} caracter)"
+          other: "é muito longo (máximo: %{count} caracteres)"
+        too_short:
+          one: "é muito curto (mínimo: %{count} caracter)"
+          other: "é muito curto (mínimo: %{count} caracteres)"
+        wrong_length:
+          one: "não possui o tamanho esperado (%{count} caracter)"
+          other: "não possui o tamanho esperado (%{count} caracteres)"
+      models:
+        user:
+          attributes:
+            username: "nome de usuário"
+            email: "e-mail"
+            password: "senha"
+            password_confirmation: "confirmação de senha"
+            current_password: "senha atual"
+            locale: "idioma"
+
+  errors:
+    messages:
+      not_saved:
+        one: "1 erro impediu que este %{resource} fosse salvo:"
+        other: "%{count} erros impediram que este %{resource} fosse salvo:"
+    not_found:
+      title: "Página não encontrada"
+      message: "A página que você procura não existe ou foi movida."
+      back_home: "Voltar ao início"
+
+  activemodel:
+    errors:
+      format: "%{attribute} %{message}"
+      messages:
+        blank: "não pode ficar em branco"
+        confirmation: "não é igual a %{attribute}"
+        invalid: "não é válido"
+        taken: "já está em uso"
+        too_long:
+          one: "é muito longo (máximo: %{count} caracter)"
+          other: "é muito longo (máximo: %{count} caracteres)"
+      models:
+        user:
+          attributes:
+            username: "nome de usuário"
+            email: "e-mail"
+            password: "senha"
+            password_confirmation: "confirmação de senha"
+            current_password: "senha atual"
+            locale: "idioma"
+
+  checkout:
+    invalid_plan: "Plano inválido."
+    error: "Erro no checkout. Entre em contato com o suporte se o problema persistir."
+    success_notice: "Pagamento recebido. Verifique seu e-mail para os dados de acesso."
+    cancelled: "Pagamento cancelado."
+
+  home:
+    title: "One Prompt – Planos Just One Prompt"
+    hero_title: "Just One Prompt"
+    hero_subtitle: ""
+    per_month: "/ mês"
+    tokens_per_month: "tokens por mês"
+    max_tokens_per_month: "tokens máximos por mês"
+    payment_methods: "Cartões de Crédito e Débito"
+    access_chat: "Acesso ao chat Just One Prompt"
+    personal_assistant: "Assistente Pessoal"
+    priority_support: "Suporte Prioritário"
+    discount_future_credits: "Desconto em créditos futuros"
+    get_plan: "Assinar %{name}"
+    create_account: "Criar conta"
+    your_plan: "Seu plano"
+    free_label: "Grátis"
+    free_badge: "✓ Ativado automaticamente ao confirmar seu email"
+    free_active_note: "Você já possui um plano ativo"
+    secure_payment: "Pagamento seguro via Stripe. Não armazenamos dados do cartão."
+    go_to_chat: "Ir para Just One Prompt"
+    edit_account: "Editar conta"
+    sign_in_to_choose: "Entrar para escolher plano"
+    already_have_account: "Já tem conta? Entrar"
+    register: "Cadastrar"
+
+    landing_page:
+      hero:
+        title: "Pare de Editar."
+        title_br: "Comece a Criar."
+        subtitle: "A complexidade do motion design morreu. Transforme suas ideias em conteúdo de vídeo profissional com apenas uma linha de texto."
+        cta: "Comece a Criar Agora"
+        generative_input: "Entrada Generativa"
+        input_placeholder: '"Comercial cinematográfico para uma marca de café, estética escura..."'
+      problem:
+        title: "Suas Ideias Não Deveriam Levar Horas."
+        learning_curve:
+          title: "A Curva de Aprendizado"
+          desc: "Anos para dominar, segundos para esquecer. Software complexo é uma barreira para a criatividade."
+        time_sink:
+          title: "O Desperdício de Tempo"
+          desc: "Gastar 4 horas em um clipe de 15 segundos. Seu tempo vale mais do que barras de renderização."
+        creative_block:
+          title: "O Bloqueio Criativo"
+          desc: "Grandes conceitos que nunca saem do bloco de notas porque a execução é muito difícil."
+        better_way: "Existe um jeito melhor"
+      engine:
+        title: "Estética Curada.<br />Pronta para Usar."
+        subtitle: "De comerciais cinematográficos a conteúdo viral. Apenas copie, cole e gere."
+        styles:
+          noir:
+            name: "Noir"
+            desc: "Escuro, sombrio, alto contraste."
+          clean:
+            name: "Clean"
+            desc: "Minimalista, espaço em branco, elegante."
+          commercial:
+            name: "Comercial"
+            desc: "Tipografia ousada, ritmo acelerado."
+          geometric:
+            name: "Geométrico"
+            desc: "Formas abstratas e padrões."
+      scale:
+        title: "Torne-se uma Fábrica de Conteúdo."
+        subtitle: "Escale sua produção sem contratar um editor. Preencha seu calendário de mídia social em minutos, não dias."
+      demo:
+        input_label: "Entrada"
+        generated_tag: "# PROMPT_GERADO_V2.0"
+        copy_button: "Copiar para Área de Transferência"
+        copied: "Copiado!"
+        typing_text: "Crie um vídeo imobiliário de luxo."
+
+  checkout_success:
+    title: "Pagamento recebido"
+    message: "Verifique seu e-mail para a senha temporária e o link de acesso. Use o Just One Prompt após entrar."
+    go_chat: "Ir para Just One Prompt"
+    back_home: "Voltar ao início"
+
+  chat:
+    limit_no_plan: "Você precisa de um plano ativo para usar o Just One Prompt. Escolha um plano na página inicial."
+    limit_expired: "Seu plano expirou. Renove na página inicial."
+    limit_reached: "Você atingiu o limite de tokens do seu plano. Faça upgrade para continuar usando."
+    no_plan: "Nenhum plano ativo."
+    choose_plan: "Escolher um plano"
+    plan_label: "Plano:"
+    usage_percent: "%{percent}%"
+    plan_limit_reached: "Você atingiu o limite do seu plano."
+    blank_message: "A mensagem não pode estar vazia."
+    message_too_long: "Mensagem muito longa (máximo 10.000 caracteres)."
+    subtitle: "Chat com Claude. Ideias, roteiros e decisões criativas."
+    copy_response: "Copiar resposta"
+    thinking: "Pensando…"
+    send: "Enviar"
+    placeholder: "Digite sua mensagem…"
+    placeholder_read_only: "Esta conversa foi finalizada. Abra a conversa atual para enviar mensagens."
+    finish_prompt: "Encerrar chat"
+    finish_confirm: "Iniciar nova conversa? Esta será salva em Conversas anteriores."
+    finished_prompt: "Nova conversa iniciada."
+    past_conversations: "Conversas anteriores"
+    current_conversation: "Conversa atual"
+    conversation_date: "Conversa de %{date}"
+    close: "Fechar"
+    read_only_conversation: "Você está vendo uma conversa finalizada. Apenas a conversa atual aceita novas mensagens."
+    cannot_send_finished: "Você não pode enviar mensagens para uma conversa finalizada. Use a conversa atual ou inicie uma nova."
+    spec_ready_prompt: 'Seu vídeo está pronto! Clique no botão "Prévia" acima do chat para visualizá-lo e aprovar a renderização final.'
+    preview_dropdown_btn: "Prévia"
+
+  auth:
+    login_title: "Entrar"
+    login_submit: "Entrar"
+    remember_me: "Manter-me conectado"
+    sign_up_title: "Cadastrar"
+    sign_up_submit: "Cadastrar"
+    edit_title: "Editar conta"
+    edit_submit: "Atualizar"
+    password_leave_blank: "Deixe em branco se não quiser alterar"
+    current_password_hint: "Precisamos da sua senha atual para confirmar as alterações"
+    password_min_chars: "mínimo de %{count} caracteres"
+    cancel_account: "Cancelar minha conta"
+    cancel_confirm: "Tem certeza?"
+    back: "Voltar"
+    waiting_confirmation: "Aguardando confirmação para: %{email}"
+    sign_up_link: "Cadastrar"
+    log_in_link: "Entrar"
+
+  video:
+    no_spec: "Nenhuma especificação de vídeo disponível ainda. Complete o chat para gerar uma."
+    already_processing: "Uma prévia ou renderização já está em andamento. Por favor, aguarde."
+    service_misconfigured: "O serviço de vídeo não está configurado. Entre em contato com o suporte."
+    preview_failed: "Falha ao gerar a prévia. Por favor, tente novamente."
+    cannot_approve: "Não é possível aprovar neste momento. Por favor, solicite uma prévia primeiro."
+    render_failed: "Falha ao renderizar o vídeo. Por favor, tente novamente."
+    not_found: "Conversa não encontrada."
+    error_message: "Algo deu errado no pipeline de vídeo."
+    retry_btn: "Tentar novamente"
+    spec_ready_title: "Seu vídeo está pronto para prévia!"
+    spec_ready_subtitle: "Geramos a especificação do vídeo a partir da sua conversa. Clique abaixo para ver uma prévia antes de renderizar."
+    preview_btn: "Gerar Prévia"
+    preview_title: "Prévia"
+    preview_subtitle: "É assim que seu vídeo ficará. Aprove para renderizar a versão final."
+    preview_iframe_title: "Player de prévia do vídeo"
+    approve_btn: "✓ Aprovar e Renderizar"
+    approve_confirm: "Você está satisfeito com esta prévia? Isso iniciará a renderização final do vídeo."
+    regenerate_btn: "Regenerar Prévia"
+    rendering_title: "Renderizando seu vídeo…"
+    rendering_subtitle: "Isso pode levar alguns minutos. Você pode sair desta página e voltar depois."
+    done_title: "Seu vídeo está pronto!"
+    done_subtitle: "Seu vídeo foi renderizado com sucesso."
+    download: "Baixar Vídeo"
+
+  nav:
+    home: "Início"
+    get_access: "Obter acesso"
+    movie_maker: "Just One Prompt"
+    edit_account: "Editar conta"
+    logout: "Sair"
+    login: "Entrar"
+    register: "Cadastrar"
+    signed_in_as: "Conectado como"
+    switch_language: "EN"
+    theme_toggle: "Alternar modo claro ou escuro"
+    theme_light: "Claro"
+    theme_dark: "Escuro"

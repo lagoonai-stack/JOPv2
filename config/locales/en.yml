@@ -1,0 +1,179 @@
+# Default locale: English
+en:
+  hello: "Hello world"
+
+  errors:
+    messages:
+      not_saved:
+        one: "1 error prohibited this %{resource} from being saved:"
+        other: "%{count} errors prohibited this %{resource} from being saved:"
+    not_found:
+      title: "Page not found"
+      message: "The page you're looking for doesn't exist or was moved."
+      back_home: "Back to home"
+
+  checkout:
+    invalid_plan: "Invalid plan."
+    error: "Checkout error. Contact support if the problem persists."
+    success_notice: "Payment received. Check your email for login details."
+    cancelled: "Payment cancelled."
+
+  home:
+    title: "One Prompt – Just One Prompt plans"
+    hero_title: "Just One Prompt"
+    hero_subtitle: ""
+    per_month: "/ month"
+    tokens_per_month: "tokens per month"
+    max_tokens_per_month: "max tokens per month"
+    payment_methods: "Credit and Debit Cards"
+    access_chat: "Access to Just One Prompt chat"
+    get_plan: "Get %{name}"
+    create_account: "Create account"
+    your_plan: "Your plan"
+    free_label: "Free"
+    free_badge: "✓ Activated automatically when you confirm your email"
+    free_active_note: "You already have an active plan"
+    secure_payment: "Secure payment via Stripe. We don't store your card details."
+    go_to_chat: "Go to Just One Prompt"
+    edit_account: "Edit account"
+    sign_in_to_choose: "Sign in to choose plan"
+    already_have_account: "Already have an account? Log in"
+    register: "Register"
+
+    landing_page:
+      hero:
+        title: "Stop Editing."
+        title_br: "Start Prompting."
+        subtitle: "The complexity of motion design is dead. Turn your ideas into professional video content with just one line of text."
+        cta: "Start Creating Now"
+        generative_input: "Generative Input"
+        input_placeholder: '"Cinematic commercial for a coffee brand, dark aesthetic."'
+      problem:
+        title: "Your Ideas Shouldn't Take Hours."
+        learning_curve:
+          title: "The Learning Curve"
+          desc: "Years to master, seconds to forget. Complex software is a barrier to creativity."
+        time_sink:
+          title: "The Time Sink"
+          desc: "Spending 4 hours on a 15-second clip. Your time is worth more than rendering bars."
+        creative_block:
+          title: "The Creative Block"
+          desc: "Great concepts that never leave the notepad because execution is too hard."
+        better_way: "There is a better way"
+      engine:
+        title: "Curated Aesthetics.<br />Ready to Deploy."
+        subtitle: "From cinematic commercials to viral content. Just copy, paste, and generate."
+        styles:
+          noir:
+            name: "Noir"
+            desc: "Dark, moody, high contrast."
+          clean:
+            name: "Clean"
+            desc: "Minimalist, whitespace, elegant."
+          commercial:
+            name: "Commercial"
+            desc: "Bold typography, fast-paced."
+          geometric:
+            name: "Geometric"
+            desc: "Abstract shapes and patterns."
+      scale:
+        title: "Become a Content Factory."
+        subtitle: "Scale your production without hiring an editor. Fill your social media calendar in minutes, not days."
+      demo:
+        input_label: "Input"
+        generated_tag: "# GENERATED_PROMPT_V2.0"
+        copy_button: "Copy to Clipboard"
+        copied: "Copied!"
+        typing_text: "Create a luxury real estate video."
+
+  checkout_success:
+    title: "Payment successful"
+    message: "Check your email for your temporary password and login link. You can use Just One Prompt once you sign in."
+    go_chat: "Go to Just One Prompt"
+    back_home: "Back to home"
+
+  chat:
+    limit_no_plan: "You need an active plan to use Just One Prompt. Choose a plan on the home page."
+    limit_expired: "Your plan has expired. Renew on the home page."
+    limit_reached: "You've reached your plan's token limit. Upgrade to continue using."
+    no_plan: "No active plan."
+    choose_plan: "Choose a plan"
+    plan_label: "Plan:"
+    usage_percent: "%{percent}%"
+    plan_limit_reached: "You have reached your plan limit."
+    blank_message: "Message can't be blank."
+    message_too_long: "Message is too long (maximum 10,000 characters)."
+    subtitle: "Chat with Claude. Ideas, scripts, and creative decisions."
+    copy_response: "Copy response"
+    thinking: "Thinking…"
+    send: "Send"
+    placeholder: "Type your message…"
+    placeholder_read_only: "This conversation is finished. Open a current conversation to send messages."
+    finish_prompt: "Finish Prompt"
+    finish_confirm: "Start a new conversation? This one will be saved in Past conversations."
+    finished_prompt: "New conversation started."
+    past_conversations: "Past conversations"
+    current_conversation: "Current conversation"
+    conversation_date: "Conversation from %{date}"
+    close: "Close"
+    read_only_conversation: "You're viewing a finished conversation. Only the current conversation accepts new messages."
+    cannot_send_finished: "You can't send messages to a finished conversation. Use the current conversation or start a new one."
+    spec_ready_prompt: 'Your video is ready! Click the "Preview" button above the chat to see it and approve the final render.'
+    preview_dropdown_btn: "Preview"
+
+  auth:
+    login_title: "Log in"
+    login_submit: "Log in"
+    remember_me: "Keep me signed in"
+    sign_up_title: "Sign up"
+    sign_up_submit: "Sign up"
+    edit_title: "Edit account"
+    edit_submit: "Update"
+    password_leave_blank: "Leave blank if you don't want to change it"
+    current_password_hint: "We need your current password to confirm your changes"
+    password_min_chars: "%{count} characters minimum"
+    cancel_account: "Cancel my account"
+    cancel_confirm: "Are you sure?"
+    back: "Back"
+    waiting_confirmation: "Currently waiting confirmation for: %{email}"
+    sign_up_link: "Sign up"
+    log_in_link: "Log in"
+
+  video:
+    no_spec: "No video spec available yet. Complete the chat to generate one."
+    already_processing: "A preview or render is already in progress. Please wait."
+    service_misconfigured: "The video service is not configured. Contact support."
+    preview_failed: "Preview generation failed. Please try again."
+    cannot_approve: "Cannot approve at this stage. Please request a preview first."
+    render_failed: "Video render failed. Please try again."
+    not_found: "Conversation not found."
+    error_message: "Something went wrong with the video pipeline."
+    retry_btn: "Try again"
+    spec_ready_title: "Your video is ready to preview!"
+    spec_ready_subtitle: "We generated the video spec from your conversation. Click below to see a preview before rendering."
+    preview_btn: "Generate Preview"
+    preview_title: "Preview"
+    preview_subtitle: "This is how your video will look. Approve to render the final version."
+    preview_iframe_title: "Video preview player"
+    approve_btn: "✓ Approve & Render"
+    approve_confirm: "Are you happy with this preview? This will start the final video render."
+    regenerate_btn: "Regenerate Preview"
+    rendering_title: "Rendering your video…"
+    rendering_subtitle: "This may take a few minutes. You can leave this page and come back."
+    done_title: "Your video is ready!"
+    done_subtitle: "Your video has been rendered successfully."
+    download: "Download Video"
+
+  nav:
+    home: "Home"
+    get_access: "Get Access"
+    movie_maker: "Just One Prompt"
+    edit_account: "Edit account"
+    logout: "Logout"
+    login: "Login"
+    register: "Register"
+    signed_in_as: "Signed in as"
+    switch_language: "PT-BR"
+    theme_toggle: "Toggle light or dark mode"
+    theme_light: "Light"
+    theme_dark: "Dark"

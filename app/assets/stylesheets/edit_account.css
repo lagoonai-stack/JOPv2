@@ -1,0 +1,145 @@
+/*
+ * Edit account page only – adjust here without affecting sign in or sign up.
+ * This file is loaded only on the edit account page.
+ */
+
+.auth-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.auth-card h2 {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.auth-card .field {
+  margin-bottom: 1.25rem;
+}
+
+.auth-card .field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.auth-card .field input[type="text"],
+.auth-card .field input[type="email"],
+.auth-card .field input[type="password"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.auth-card .field input:focus {
+  outline: none;
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.1);
+}
+
+.auth-card .field input.field-with-error {
+  border-color: var(--color-error-border, #fecaca);
+}
+
+.auth-card .field em {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.auth-card .actions {
+  margin-top: 1.5rem;
+}
+
+.auth-card .actions input[type="submit"] {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--color-button-text);
+  background: var(--color-button-bg);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.auth-card .actions input[type="submit"]:hover {
+  background: var(--color-button-hover);
+}
+
+.auth-card h3 {
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.auth-card .cancel-account {
+  margin-top: 0.5rem;
+}
+
+.auth-card .cancel-account button,
+.auth-card .cancel-account input[type="submit"] {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.auth-card .cancel-account button:hover,
+.auth-card .cancel-account input[type="submit"]:hover {
+  background: var(--color-border);
+}
+
+.auth-card .back-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.auth-card .back-link:hover {
+  text-decoration: underline;
+}
+
+.auth-error-box,
+#error_explanation {
+  background: var(--color-error-bg, #fef2f2);
+  border: 1px solid var(--color-error-border, #fecaca);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-error-box h3,
+#error_explanation h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.auth-error-box ul,
+#error_explanation ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.auth-card .field-error {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-error-text, #b91c1c);
+}

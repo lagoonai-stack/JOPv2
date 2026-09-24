@@ -1,0 +1,10 @@
+.chat-message{ class: "chat-message--#{message.role}", data: { role: message.role } }
+  .chat-message__bubble{ data: message.role == "assistant" ? { controller: "copy-message", copy_message_content_value: message.content } : {} }
+    .chat-message__content= simple_format(h(message.content))
+    - if message.role == "assistant"
+      .chat-message__actions
+        %button.chat-message__copy{ type: "button", title: t("chat.copy_response"), data: { action: "click->copy-message#copy" } }
+          %svg.chat-message__copy-icon{ xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" }
+            %rect{ x: "9", y: "9", width: "13", height: "13", rx: "2", ry: "2" }
+            %path{ d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" }
+

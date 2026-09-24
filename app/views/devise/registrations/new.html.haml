@@ -1,0 +1,37 @@
+.auth-card
+  %h2= t("auth.sign_up_title")
+  = form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }) do |f|
+    = hidden_field_tag :locale, I18n.locale if I18n.locale != I18n.default_locale
+    = render "devise/shared/error_messages", resource: resource
+
+    .field
+      = f.label :username
+      = f.text_field :username, autofocus: true, autocomplete: "username", class: ("field-with-error" if resource.errors[:username].any?)
+      - resource.errors.full_messages_for(:username).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .field
+      = f.label :email
+      = f.email_field :email, autocomplete: "email", class: ("field-with-error" if resource.errors[:email].any?)
+      - resource.errors.full_messages_for(:email).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .field
+      = f.label :password
+      - if @minimum_password_length
+        %em= "(#{t('auth.password_min_chars', count: @minimum_password_length)})"
+      = f.password_field :password, autocomplete: "new-password", class: ("field-with-error" if resource.errors[:password].any?)
+      - resource.errors.full_messages_for(:password).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .field
+      = f.label :password_confirmation
+      = f.password_field :password_confirmation, autocomplete: "new-password", class: ("field-with-error" if resource.errors[:password_confirmation].any?)
+      - resource.errors.full_messages_for(:password_confirmation).each do |message|
+        %p.field-error{ role: "alert" }= message
+
+    .actions
+      = f.submit t("auth.sign_up_submit")
+
+  .auth-links
+    = render "devise/shared/links"
