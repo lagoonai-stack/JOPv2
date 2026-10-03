@@ -143,6 +143,59 @@
     display: inline-block;
 }
 
+/* ── Conversational adjustment (previewing state) ── */
+.video-preview__edit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.video-preview__edit-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.video-preview__edit-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    font: inherit;
+    font-size: 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    resize: vertical;
+}
+
+.video-preview__edit .video-preview__btn {
+    align-self: flex-end;
+}
+
+.video-preview__edit .video-preview__btn:disabled {
+    opacity: 0.7;
+    cursor: progress;
+}
+
+.video-preview__edits {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.video-preview__edits-title {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+}
+
+.video-preview__edits-list {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
 /* ── Shared button base ── */
 .video-preview__btn {
     display: inline-flex;

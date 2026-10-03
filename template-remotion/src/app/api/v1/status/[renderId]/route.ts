@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/helpers/auth';
+import { validateSignedGet } from '@/helpers/auth';
 import { getRenderJobStatus } from '@/lib/local-render-service';
 
 export async function GET(
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ renderId: string }> }
 ) {
   try {
-    const authCheck = requireAuth(req);
+    const authCheck = validateSignedGet(req);
     if (!authCheck.valid) {
       return NextResponse.json(
         { type: 'error', message: authCheck.error },

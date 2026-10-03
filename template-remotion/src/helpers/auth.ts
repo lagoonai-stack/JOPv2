@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const SHARED_SECRET = process.env.JOP_SHARED_SECRET;
 
@@ -11,7 +11,15 @@ export function validateSignature(body: string, receivedSignature: string): bool
     .update(body)
     .digest('hex');
 
-  return receivedSignature === expectedSignature;
+  const encoder = new TextEncoder();
+  const received = encoder.encode(receivedSignature);
+  const expected = encoder.encode(expectedSignature);
+
+  if (received.length !== expected.length) {
+    return false;
+  }
+
+  return timingSafeEqual(received, expected);
 }
 
 export function requireAuth(req: Request): { valid: boolean; error?: string } {
@@ -22,6 +30,34 @@ export function requireAuth(req: Request): { valid: boolean; error?: string } {
   }
 
   if (!SHARED_SECRET) {
+    return { valid: false, error: 'Service not configured' };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Full authentication for requests that carry no body (GET).
+ *
+ * requireAuth() only checks that the header is present — it is the first half
+ * of validateRequest(), which then verifies the signature over the body. A GET
+ * route calling requireAuth() alone accepts any value in X-JOP-Signature, so
+ * bodyless routes must use this instead. Rails signs the empty string for GET
+ * (RemotionService#get_with_hmac), so that is what we verify against.
+ */
+export function validateSignedGet(req: Request): { valid: boolean; error?: string } {
+  const presence = requireAuth(req);
+  if (!presence.valid) {
+    return presence;
+  }
+
+  const signature = req.headers.get('X-JOP-Signature')!;
+
+  try {
+    if (!validateSignature('', signature)) {
+      return { valid: false, error: 'Invalid signature' };
+    }
+  } catch {
     return { valid: false, error: 'Service not configured' };
   }
 

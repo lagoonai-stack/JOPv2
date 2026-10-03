@@ -73,13 +73,19 @@ class ChatController < ApplicationController
     @user_message = @conversation.claude_messages.create!(role: "user", content: content)
     response = call_openai(content)
 
-    # Detect if OpenAI returned a video generation prompt in its response.
-    # When the agent reaches Step 6 it provides the complete prompt for Remotion AI.
-    # We extract the prompt and send it to Remotion, which will handle everything:
-    # - Parse configuration (width, height, duration, fps)
-    # - Generate TSX component using OpenAI
-    # - Render preview and video
-    generation_prompt = extract_generation_prompt(response[:content])
+    # When the agent reaches Step 6 it emits the video spec in a ```json block.
+    # The spec is the contract: it carries the configuration the user approved,
+    # so the Remotion service no longer has to infer any of it from the prose.
+    parsed_spec = extract_video_spec(response[:content])
+    validated_spec = parsed_spec ? VideoSpec.build(parsed_spec) : nil
+
+    # A spec that fails validation is our contract failing, not a question for
+    # the user — repair it with the agent before anything reaches the screen.
+    if validated_spec && !validated_spec.valid?
+      response, parsed_spec, validated_spec = repair_invalid_spec(response, validated_spec)
+    end
+
+    generation_prompt = extract_generation_prompt(response[:content], spec: parsed_spec)
     display_content = if generation_prompt
                         strip_generation_prompt(response[:content])
                       else
@@ -96,23 +102,19 @@ class ChatController < ApplicationController
     )
 
     if generation_prompt
-      # Store the generation prompt - Remotion AI will handle everything.
-      # When the prompt is itself the raw JSON spec (width/height/fps/moments),
-      # also normalize it into video_spec so the dimensions can be passed as
-      # explicit options to the Remotion service instead of left to its own guess.
-      spec = begin
-        JSON.parse(generation_prompt)
-      rescue JSON::ParserError
-        nil
-      end
-      video_spec = if spec.is_a?(Hash) && spec.key?("moments")
-                     {
-                       "width" => spec["width"],
-                       "height" => spec["height"],
-                       "fps" => spec["fps"],
-                       "duration_in_frames" => spec["duration_frames"]
-                     }.compact
-                   end
+      # Store the generation prompt together with the spec the agent emitted, so
+      # the approved dimensions/duration travel as explicit options instead of
+      # being re-inferred by the Remotion service from the prose. A validated
+      # spec also brings the derived timeline, whose total is computed from the
+      # word counts and transition overlaps rather than taken on trust.
+      # The canonical spec rides along under its own key so the render pipeline
+      # keeps reading the four top-level config keys it always read.
+      video_spec =
+        if validated_spec&.valid?
+          validated_spec.to_video_spec_column.merge("canonical" => validated_spec.to_h)
+        else
+          normalize_video_spec(parsed_spec)
+        end
 
       @conversation.update!(
         generation_prompt: generation_prompt,
@@ -121,8 +123,16 @@ class ChatController < ApplicationController
       )
       Rails.logger.info(
         "[ChatController] Generation prompt detected for conversation=#{@conversation.id} " \
-        "prompt_length=#{generation_prompt.length} chars"
+        "prompt_length=#{generation_prompt.length} chars " \
+        "spec=#{video_spec&.except('canonical').inspect} " \
+        "moments=#{validated_spec&.valid? ? validated_spec.moments.size : 'n/a'}"
       )
+      if video_spec.blank?
+        Rails.logger.warn(
+          "[ChatController] No JSON spec block found for conversation=#{@conversation.id} — " \
+          "dimensions will be inferred by the Remotion service"
+        )
+      end
     end
 
     turbo_streams = [
@@ -137,14 +147,14 @@ class ChatController < ApplicationController
                            })
     ]
 
-    # If a prompt was just detected, update both the preview panel and the header
-    # actions so the Preview button appears immediately without a page reload.
+    # If a prompt was just detected, move the preview panel into the header
+    # dropdown so the Preview button appears immediately without a page reload.
+    # This mirrors show.html.haml, which renders the panel only in the header once
+    # a preview exists. Leaving the inline copy behind puts two
+    # #video_preview_panel elements on the page, and the preview response then
+    # replaces the hidden header copy while the visible one stays stale.
     if generation_prompt
-      turbo_streams << turbo_stream.replace(
-        "video_preview_panel",
-        partial: "chat/video_preview",
-        locals: { conversation: @conversation, error: nil }
-      )
+      turbo_streams << turbo_stream.remove_all("#video_preview_panel")
       turbo_streams << turbo_stream.replace(
         "chat_header_actions",
         partial: "chat/header_actions",
@@ -191,8 +201,14 @@ class ChatController < ApplicationController
     end
   end
 
-  def call_openai(new_content)
-    messages = @conversation.api_messages + [{ role: "user", content: new_content }]
+  # The user's message is already persisted by the time this runs, so
+  # api_messages already ends with it — appending it again sent the model the
+  # same turn twice.
+  def call_openai(_new_content = nil)
+    call_openai_messages(@conversation.api_messages)
+  end
+
+  def call_openai_messages(messages)
     OpenaiService.new.chat(agent_name: AGENT, messages: messages)
   rescue OpenaiService::MissingApiKey
     {
@@ -216,6 +232,130 @@ class ChatController < ApplicationController
   # Video prompt detection & content cleaning
   # ---------------------------------------------------------------------------
 
+  # Ask the agent to repair a spec that failed validation — once.
+  #
+  # The exchange never reaches the screen: neither the rejected answer nor the
+  # correction request is stored as a chat message, only the repaired result.
+  # A malformed spec is the contract failing, and the user has nothing to
+  # decide about it.
+  #
+  # If the second attempt also fails, the first answer is kept: a retry that
+  # still does not validate is not obviously better, and the original at least
+  # matches what the user was just told. The declared dimensions are used
+  # either way, so no value is left to be inferred downstream.
+  #
+  # @param response [Hash] the agent's first answer
+  # @param spec [VideoSpec] the failed validation
+  # @return [Array(Hash, Hash, VideoSpec)] response, raw spec, validated spec
+  def repair_invalid_spec(response, spec)
+    Rails.logger.warn(
+      "[ChatController] Spec inválida para conversation=#{@conversation.id}: #{spec.errors.join(' | ')}"
+    )
+
+    # Shortening a caption is the only fix that touches text the user approved;
+    # without explicit permission the agent keeps the long caption and fails again.
+    caption_rule = if spec.caption_too_long?
+                     <<~RULE
+                       Legendas acima do limite: encurte cada uma para no máximo #{VideoSpec::MAX_CAPTION_WORDS_MINIMALISTA} palavras, preservando o sentido.
+                       Artigos, preposições e conjunções contam como palavra. Isso é permitido e esperado — use a mesma legenda encurtada na prosa e no JSON.
+
+                     RULE
+                   end
+
+    correction = <<~CORRECTION
+      A spec JSON que você emitiu não passou na validação do sistema e o vídeo não pode ser gerado assim.
+
+      Problemas encontrados:
+      #{spec.error_report}
+
+      #{caption_rule}Reenvie a mensagem completa corrigida, mantendo o bloco ```json no final.
+      Corrija apenas os problemas listados — fora isso, não mude as decisões já acordadas com o usuário.
+    CORRECTION
+
+    retry_response = call_openai_messages(
+      @conversation.api_messages + [
+        { role: "assistant", content: response[:content] },
+        { role: "user", content: correction }
+      ]
+    )
+
+    retry_spec = extract_video_spec(retry_response[:content])
+    validated = retry_spec ? VideoSpec.build(retry_spec) : nil
+
+    unless validated&.valid?
+      Rails.logger.error(
+        "[ChatController] Spec ainda inválida após correção para conversation=#{@conversation.id}: " \
+        "#{validated&.errors&.join(' | ') || 'nenhum bloco json na resposta'}"
+      )
+      return [response, extract_video_spec(response[:content]), spec]
+    end
+
+    Rails.logger.info(
+      "[ChatController] Spec corrigida na segunda tentativa para conversation=#{@conversation.id}"
+    )
+
+    [merge_token_usage(response, retry_response), retry_spec, validated]
+  end
+
+  # The repair attempt's tokens belong to this turn, so the plan limits count it.
+  def merge_token_usage(first, second)
+    second.merge(
+      input_tokens: first[:input_tokens].to_i + second[:input_tokens].to_i,
+      output_tokens: first[:output_tokens].to_i + second[:output_tokens].to_i,
+      cache_creation_input_tokens:
+        first[:cache_creation_input_tokens].to_i + second[:cache_creation_input_tokens].to_i,
+      cache_read_input_tokens:
+        first[:cache_read_input_tokens].to_i + second[:cache_read_input_tokens].to_i
+    )
+  end
+
+  # Locate the JSON spec block the agent is required to emit in Step 6.
+  #
+  # The contract in config/initializers/openai_agents.rb is: deliver the prose
+  # direction first, then append the spec inside a ```json fence. Parsing the
+  # whole message as JSON only succeeds when the message is nothing but JSON —
+  # the one shape that contract does not produce. So the fence is checked first
+  # and the bare-JSON form is kept as a fallback for the alternative wording at
+  # the end of that prompt.
+  #
+  # @param content [String]
+  # @return [Hash, nil] the parsed spec, or nil when the message carries none
+  def extract_video_spec(content)
+    return nil if content.blank?
+
+    candidates = content.scan(/```json\s*\n?(.*?)```/m).flatten
+    candidates << content.strip
+
+    candidates.each do |candidate|
+      parsed = begin
+        JSON.parse(candidate)
+      rescue JSON::ParserError
+        next
+      end
+
+      return parsed if parsed.is_a?(Hash) && parsed.key?("moments")
+    end
+
+    nil
+  end
+
+  # Reduce the agent's spec to the configuration keys the render pipeline reads.
+  # Returns nil when nothing usable is present, so callers can tell "no spec"
+  # apart from "spec with no dimensions".
+  #
+  # @param spec [Hash, nil]
+  # @return [Hash, nil]
+  def normalize_video_spec(spec)
+    return nil unless spec.is_a?(Hash)
+
+    {
+      "width" => spec["width"],
+      "height" => spec["height"],
+      "fps" => spec["fps"],
+      "duration_in_frames" => spec["duration_frames"]
+    }.compact.presence
+  end
+
   # Extract the natural language generation prompt that the AI produces.
   # The agent generates a complete, detailed prompt in Step 6 that includes all
   # the information Remotion AI needs to generate the video component.
@@ -226,19 +366,16 @@ class ChatController < ApplicationController
   # instructions for video generation.
   #
   # @param content [String]
+  # @param spec [Hash, nil] the spec already parsed out of this message, if any
   # @return [String, nil]
-  def extract_generation_prompt(content)
+  def extract_generation_prompt(content, spec: nil)
     return nil if content.blank?
 
-    # The Step 6 deliverable can also be a raw JSON spec (width/height/fps/moments),
-    # as defined in config/initializers/openai_agents.rb. This is unambiguous, so
-    # detect it directly instead of relying on the prose heuristics below.
-    parsed = begin
-      JSON.parse(content.strip)
-    rescue JSON::ParserError
-      nil
-    end
-    return content.strip if parsed.is_a?(Hash) && parsed.key?("moments")
+    # A valid spec block is unambiguous evidence that the agent reached Step 6.
+    # Short-circuit here so the heuristics below — in particular the confirmation
+    # patterns, one of which matches the bare phrase "pode gerar" anywhere in the
+    # text — can never veto a message that actually carries the deliverable.
+    return content.strip if spec.present?
 
     # 🚨 CRITICAL: Detect confirmation questions - do NOT treat as final prompt
     # The agent asks for confirmation before generating the final prompt

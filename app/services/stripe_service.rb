@@ -4,7 +4,10 @@ class StripeService
   class Error < StandardError; end
   class InvalidPlan < Error; end
 
-  PLANS = Rails.application.config.stripe_plans.keys.reject { |k| k == "free" }.freeze
+  # Planos vendáveis: exclui o free e qualquer plano interno (ex.: "unlimited").
+  PLANS = Rails.application.config.stripe_plans
+               .reject { |key, cfg| key == "free" || cfg[:internal] }
+               .keys.freeze
 
   def initialize
     @api_key = Rails.configuration.stripe[:secret_key]
