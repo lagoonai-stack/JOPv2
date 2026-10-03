@@ -42,6 +42,7 @@ Rails.application.routes.draw do
   scope "conversations/:conversation_id/video", as: :conversation_video do
     post "preview",  to: "video#request_preview", as: :preview
     post "approve",  to: "video#approve",          as: :approve
+    post "edit",     to: "video#request_edit",     as: :edit
     get  "status",   to: "video#status",           as: :status
   end
 

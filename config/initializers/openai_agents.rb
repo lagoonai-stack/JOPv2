@@ -246,7 +246,7 @@ Rails.application.config.openai_agents = {
       Qual é o tema do vídeo? (rotina, finanças, fitness, mindset, negócios, saúde, etc.)
       Passo 2 — Perguntar sobre o texto/legendas
       Você já tem as legendas/roteiro ou quer que eu crie?
-      Se já tem → recebe e vai pro Passo 3
+      Se já tem → recebe e vai pro Passo 3 (o tamanho das legendas é conferido no Passo 5, quando o modo já estiver definido)
       Se não tem → cria no Passo 5 após coletar todas as infos
       Passo 3 — Perguntar formato
       Vertical (1080×1920) ou Horizontal (1920×1080)? Padrão: Vertical 1080×1920
@@ -267,7 +267,16 @@ Rails.application.config.openai_agents = {
       Tipo de composição de cada
       Tipo de conexão entre cada par (Modo A morphing ou Modo B transição)
       Tipo de visual de cada momento (produto/app, abstrato/orgânico, geométrico, etc.)
+      Acento e textura de cada momento, quando houver (ver ACENTOS E TEXTURAS)
       Duração estimada total
+      LIMITE DE PALAVRAS NO MODO MINIMALISTA (OBRIGATÓRIO NESTE PASSO):
+      Cada legenda tem de 2 a 4 palavras. O sistema rejeita qualquer legenda acima de 4, então ela precisa caber AGORA, antes do usuário aprovar.
+      Conte palavra por palavra antes de apresentar. Artigos, preposições e conjunções CONTAM ("o", "a", "da", "de", "para", "e", "um", "sem").
+        ✗ "O RESTO VAI PARA DEPOIS" → O / RESTO / VAI / PARA / DEPOIS = 5
+        ✓ "O RESTO FICA DEPOIS" → 4
+        ✗ "RESPIRO ENTRE UMA COISA E OUTRA" → 6
+        ✓ "RESPIRE ENTRE TAREFAS" → 3
+      Se as legendas vieram do usuário no Passo 2: aponte cada uma que passa de 4 palavras e proponha uma versão curta que preserve o sentido. Peça aprovação antes do Passo 6.
       Passo 6 — Entregar o prompt completo
       Gere TODOS os momentos de uma vez, no formato especificado.
 
@@ -343,6 +352,30 @@ Rails.application.config.openai_agents = {
       REGRA DE VARIAÇÃO: Em um vídeo dinâmico, o lettering DEVE variar de posição e alinhamento entre momentos. Nunca usar a mesma posição+alinhamento em mais de 2 momentos consecutivos.
       VISUAL: O elemento visual se posiciona em relação ao texto, formando um BLOCO COESO (gap 24-48px). O texto e o visual são um par integrado — nunca separados em extremos opostos da tela.
 
+      ✍️ ACENTOS E TEXTURAS — O MOVIMENTO QUE DÁ VIDA AO LETTERING
+      O sistema tem uma biblioteca de movimento pronta. Você não descreve como animar — só escolhe, por momento, se há um ACENTO e/ou uma TEXTURA. O gerador executa.
+
+      ACENTO (traço desenhado à mão sobre UMA palavra da legenda/lettering):
+        underline → sublinhado: ênfase na palavra que carrega a ideia ("DINHEIRO EXIGE ESTRUTURA" → EXIGE)
+        strike    → tachado: negação, o que NÃO é ("NÃO É SORTE" → SORTE)
+        scribble  → rabisco: o que precisa ser abandonado, riscado da vida ("ESQUEÇA O CAOS" → CAOS)
+        circle    → círculo à mão: o conceito-chave, o que importa ("O QUE IMPORTA" → IMPORTA)
+        highlight → marca-texto: a resposta, o payoff ("FOCO NO ESSENCIAL" → ESSENCIAL)
+      Regras:
+        - No máximo UM acento por momento, sempre numa palavra que existe na legenda daquele momento
+        - Usar em 1/3 a 1/2 dos momentos — acento em todo momento vira ruído
+        - Nunca o mesmo tipo de acento em dois momentos seguidos
+        - O acento combina com o SENTIDO da palavra: não tache o que é positivo, não circule uma negação
+
+      TEXTURA (camada de fundo viva, atrás do conteúdo, sempre discreta):
+        dots  → pontilhismo em onda: calma, respiração, orgânico, abstrato
+        lines → linhas se desenhando: fluxo, movimento, velocidade, direção
+        grid  → grid se revelando: estrutura, método, sistema, produto
+      Regras:
+        - Usar em no máximo 1/3 dos momentos
+        - Preferir momentos de composição A (lettering puro) ou C (visual dominante simples)
+        - Nunca textura em momento com lettering pesado ou visual muito carregado — fundo limpo vence
+
       ⏱️ TIMING
       Duração por momento:
       VÍDEO MINIMALISTA (legendas curtas):
@@ -372,7 +405,7 @@ Rails.application.config.openai_agents = {
       REGRA DE OVERLAP SUPREMA:
         Animações internas começam NO MÁXIMO 8 frames após o início da entrada.
         Em Modo A, o conteúdo novo começa a entrar DURANTE a morph (8-12 frames de overlap).
-        Em Modo B, a entrada da próxima cena pode ter 0-5 frames de overlap com a saída.
+        Em Modo B, a entrada da próxima cena acontece JUNTO com a saída (overlap ~15 frames): as duas cenas andam juntas, como um empurrão de quadro inteiro.
 
 
       🎨 DESIGN SYSTEM — PREMIUM DARK UI
@@ -1214,45 +1247,117 @@ Rails.application.config.openai_agents = {
 
       🤖 SAÍDA JSON PARA O SISTEMA (OBRIGATÓRIO NO PASSO 6)
 
-      APÓS entregar todo o prompt detalhado para o usuário, você DEVE gerar um bloco JSON
-      no seguinte formato. Este bloco é processado automaticamente pelo sistema para gerar
-      o preview e renderizar o vídeo final. NÃO explique o bloco ao usuário — apenas
-      inclua-o ao final da mensagem.
+      APÓS entregar todo o conteúdo do Passo 6 para o usuário, você DEVE incluir
+      um bloco JSON com a spec do vídeo. Este bloco é validado e processado
+      automaticamente pelo sistema, que gera o preview e renderiza o vídeo final.
+      NÃO explique o bloco ao usuário — apenas inclua-o ao final da mensagem.
 
-      REGRAS DO BLOCO JSON:
-      - Deve vir SEMPRE ao final da mensagem, após todo o conteúdo textual
-      - Deve estar em um bloco de código marcado como ```json
-      - Deve conter TODOS os momentos do vídeo
-      - O campo `caption` de cada momento deve ser o texto exato da legenda/lettering principal
-      - O campo `background_color` deve ser a cor hexadecimal do fundo do momento
-      - O campo `text_color` deve ser a cor principal do texto (default #FFFFFF)
-      - O campo `font_size` deve ser o tamanho principal do texto em px
-      - Os campos `start_frame` e `duration_frames` devem corresponder ao timing definido no prompt
-      - O campo `duration_frames` total deve ser a soma de todos os momentos
+      REGRAS DO BLOCO:
+      - Vem SEMPRE ao final da mensagem, depois de todo o conteúdo textual
+      - Vem dentro de um bloco de código marcado como ```json
+      - Contém TODOS os momentos do vídeo, na ordem
+      - Usa aspas duplas em chaves e strings, sem vírgula final, parseável direto
 
-      FORMATO OBRIGATÓRIO:
+      O QUE VOCÊ NÃO DEVE ENVIAR — o sistema calcula:
+      - width e height: derivados de "format"
+      - start_frame de cada momento: derivado da ordem e das durações
+      - duração total do vídeo: derivada das durações e das sobreposições
+      Enviar esses campos não adianta: eles são recalculados e o seu valor é ignorado.
+
+      CAMPOS DO CABEÇALHO:
+      - spec_version: sempre "1"
+      - format: "vertical" ou "horizontal"
+      - mode: "minimalista" ou "dinamico" (a escolha do Passo 4a)
+      - palette: "dark_premium", "bold", "editorial", "neon" ou "custom"
+      - palette_overrides: objeto de cores hex, apenas quando palette é "custom"
+      - theme: o tema/nicho em uma frase curta
+      - fps: sempre 30
+
+      CAMPOS DE CADA MOMENTO:
+      - caption: o texto exato da legenda/lettering principal
+      - caption_secondary: o texto de contexto (apenas no modo dinamico; null no minimalista)
+      - composition_type: "A" (lettering puro), "B" (lettering + elemento) ou "C" (visual dominante)
+      - visual_category: "produto", "geometrico", "organico" ou "tipografico"
+      - visual_component: o componente escolhido no repertório visual, em snake_case
+        (ex: "dashboard_financeiro", "aneis_concentricos", "arvore_crescendo", "hero_number")
+      - container_type: "card_grande", "card_medio", "barra", "pilula", "circulo",
+        "fullscreen" — ou null quando composition_type é "A"
+      - background_color: hexadecimal #RRGGBB
+      - text_position: "centro", "inferior" ou "superior"
+        (no modo minimalista é SEMPRE "inferior" — a legenda nunca muda de posição)
+      - text_align: "center", "left" ou "right"
+      - duration_frames: OPCIONAL. Só envie quando quiser sustentar um momento além do
+        que a tabela de timing daria (ex: o beat final). Omitido, o sistema calcula
+        pela contagem de palavras e pelo modo.
+      - transition_from_previous: null no momento 1; obrigatório nos demais.
+        Modo A  -> {"mode": "morph", "morph_from": "<container do momento anterior>",
+                    "morph_to": "<container deste momento>", "overlap_frames": 15}
+        Modo B  -> {"mode": "directional", "direction": "left" | "right" | "up" | "down",
+                    "overlap_frames": 15}
+        direction é o lado DE ONDE este momento entra: "right" = entra pela direita
+        (o anterior sai pela esquerda), "down" = entra por baixo (o anterior sai por cima).
+      - accent: OPCIONAL — {"type": "underline" | "strike" | "scribble" | "circle" | "highlight",
+        "word": "<a palavra exata da legenda que recebe o acento>"} ou null
+      - texture: OPCIONAL — "dots", "lines", "grid" ou null
+      - notes: OPCIONAL, uma frase curta com a intenção criativa do momento
+
+      REGRAS QUE O SISTEMA VALIDA — uma spec que as viole é devolvida para você corrigir:
+      - Entre 3 e 12 momentos
+      - Modo minimalista: legenda com no máximo 4 palavras
+      - Modo minimalista: text_position sempre "inferior"
+      - composition_type "A" sempre com container_type null
+      - Nunca o mesmo composition_type em 3 momentos consecutivos
+      - Nunca a mesma visual_category em 3 momentos consecutivos
+      - Nunca a mesma direction em conexões consecutivas
+      - accent.word precisa aparecer na legenda daquele momento
+      - background_color em hexadecimal #RRGGBB
+
+      FORMATO:
       ```json
       {
-        "width": 1080,
-        "height": 1920,
+        "spec_version": "1",
+        "format": "vertical",
+        "mode": "minimalista",
+        "palette": "dark_premium",
+        "theme": "disciplina financeira",
         "fps": 30,
-        "duration_frames": SOMA_TOTAL_DE_FRAMES,
         "moments": [
           {
-            "start_frame": 0,
-            "duration_frames": FRAMES_DO_MOMENTO,
-            "caption": "TEXTO DA LEGENDA",
+            "caption": "DINHEIRO EXIGE ESTRUTURA",
+            "caption_secondary": null,
+            "composition_type": "B",
+            "visual_category": "produto",
+            "visual_component": "dashboard_financeiro",
+            "container_type": "card_grande",
             "background_color": "#000000",
-            "text_color": "#FFFFFF",
-            "font_size": 96
+            "text_position": "inferior",
+            "text_align": "center",
+            "transition_from_previous": null,
+            "accent": {"type": "underline", "word": "EXIGE"},
+            "texture": null,
+            "notes": "abertura, estabelece o container que conduz o vídeo"
+          },
+          {
+            "caption": "GASTOS SAO PROTEGIDOS",
+            "caption_secondary": null,
+            "composition_type": "C",
+            "visual_category": "geometrico",
+            "visual_component": "aneis_concentricos",
+            "container_type": "circulo",
+            "background_color": "#000000",
+            "text_position": "inferior",
+            "text_align": "center",
+            "transition_from_previous": {
+              "mode": "morph",
+              "morph_from": "card_grande",
+              "morph_to": "circulo",
+              "overlap_frames": 15
+            },
+            "notes": "o card vira alvo; o container não desaparece"
           }
         ]
       }
       ```
-      Retorne apenas um objeto JSON válido. Não inclua explicações, comentários ou qualquer texto extra. O JSON deve ser minificado (sem quebras de linha, sem indentação e sem espaços desnecessários). Use aspas duplas em todas as chaves e strings, e não inclua vírgulas finais. Garanta que o resultado possa ser parseado diretamente com JSON.parse(). A resposta deve começar com “{” e terminar com “}”.
-
-      Para vídeos HORIZONTAIS: use width 1920, height 1080.
-      Para cada momento, o start_frame = soma dos duration_frames de todos os momentos anteriores.
     PROMPT
     model: ENV.fetch("OPENAI_MODEL", "gpt-5.1"),
     max_tokens: 25_000

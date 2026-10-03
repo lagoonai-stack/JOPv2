@@ -1,4 +1,5 @@
 import * as Babel from "@babel/standalone";
+import { prepareGeneratedCode } from "./code-prepare";
 import { LightLeak } from "@remotion/light-leaks";
 import { Lottie } from "@remotion/lottie";
 import * as RemotionPaths from "@remotion/paths";
@@ -46,6 +47,23 @@ import {
   createSmoothSvgPath,
 } from "@remotion/media-utils";
 import * as THREE from "three";
+import { DESIGN_SYSTEM } from "./design-system";
+
+// A design-system name the generated code declares itself (an older video with
+// its own `Stagger` helper, say) is left out of the injected scope: a function
+// parameter redeclared with const/let in the body is a SyntaxError.
+function designSystemScope(code: string): [string[], unknown[]] {
+  const names: string[] = [];
+  const values: unknown[] = [];
+  for (const [name, value] of Object.entries(DESIGN_SYSTEM)) {
+    const declared = new RegExp(`\\b(?:const|let|var|function|class)\\s+${name}\\b`).test(code);
+    if (!declared) {
+      names.push(name);
+      values.push(value);
+    }
+  }
+  return [names, values];
+}
 
 export interface CompilationResult {
   Component: React.ComponentType | null;
@@ -59,60 +77,7 @@ export function compileCode(code: string): CompilationResult {
   }
 
   try {
-    let cleaned = code;
-
-    // Extract the last code block if markdown blocks are present
-    const blockRegex = /```[a-zA-Z]*\r?\n([\s\S]*?)```/g;
-    let match;
-    let lastBlock = "";
-    while ((match = blockRegex.exec(code)) !== null) {
-      lastBlock = match[1];
-    }
-    
-    if (lastBlock) {
-      cleaned = lastBlock;
-    } else {
-      // Fallback for unclosed blocks or blocks without language tags
-      const unclosedMatch = code.match(/```[a-zA-Z]*\r?\n([\s\S]*)$/);
-      if (unclosedMatch) {
-        cleaned = unclosedMatch[1];
-      } else {
-        // Fallback: just strip any stray markdown backticks
-        cleaned = code.replace(/^[\s\S]*?```[a-zA-Z]*\r?\n/, "").replace(/```\s*$/, "");
-        // Strip stray language tags that Claude sometimes prepends without backticks
-        cleaned = cleaned.replace(/^\s*(?:typescript|tsx|ts|jsx|js)\s*\r?\n/i, "");
-      }
-    }
-
-    // Remove type imports
-    cleaned = cleaned.replace(/import\s+type\s*\{[\s\S]*?\}\s*from\s*["'][^"']+["'];?/g, "");
-    cleaned = cleaned.replace(/import\s+\w+\s*,\s*\{[\s\S]*?\}\s*from\s*["'][^"']+["'];?/g, "");
-    cleaned = cleaned.replace(/import\s*\{[\s\S]*?\}\s*from\s*["'][^"']+["'];?/g, "");
-    cleaned = cleaned.replace(/import\s+\*\s+as\s+\w+\s+from\s*["'][^"']+["'];?/g, "");
-    cleaned = cleaned.replace(/import\s+\w+\s+from\s*["'][^"']+["'];?/g, "");
-    cleaned = cleaned.replace(/import\s*["'][^"']+["'];?/g, "");
-
-    cleaned = cleaned.trim();
-
-    // Find the main component name
-    let exportedName = "DynamicAnimation";
-    
-    // Look for `export const Name` or `export default Name` or `export function Name`
-    // We want the LAST export in the file in case it exports helpers too.
-    const exportRegex = /export\s+(?:const|function|default)\s+(?:function\s+)?([A-Za-z0-9_]+)/g;
-    let exportMatch;
-    while ((exportMatch = exportRegex.exec(cleaned)) !== null) {
-      if (exportMatch[1] && exportMatch[1] !== "default") {
-        exportedName = exportMatch[1];
-      }
-    }
-    
-    // Replace export default Name; with just nothing (we'll return it manually)
-    cleaned = cleaned.replace(/export\s+default\s+(?:function\s+)?[A-Za-z0-9_]+;?/g, "");
-    
-    // Remove all remaining `export ` keywords
-    cleaned = cleaned.replace(/export\s+const\s+/g, "const ");
-    cleaned = cleaned.replace(/export\s+function\s+/g, "function ");
+    const { cleaned, exportedName } = prepareGeneratedCode(code);
 
     const transpiled = Babel.transform(cleaned, {
       presets: ["react", "typescript"],
@@ -138,6 +103,7 @@ export function compileCode(code: string): CompilationResult {
     };
 
     const wrappedCode = `${transpiled.code}\nreturn ${exportedName};`;
+    const [dsNames, dsValues] = designSystemScope(cleaned);
 
     const createComponent = new Function(
       "React",
@@ -224,6 +190,8 @@ export function compileCode(code: string): CompilationResult {
       "cutPath",
       "extendViewBox",
       "getBoundingBox",
+      // Motion library (src/remotion/design-system)
+      ...dsNames,
       wrappedCode,
     );
 
@@ -312,6 +280,7 @@ export function compileCode(code: string): CompilationResult {
       RemotionPaths.cutPath,
       RemotionPaths.extendViewBox,
       RemotionPaths.getBoundingBox,
+      ...dsValues,
     );
 
     if (typeof Component !== "function") {

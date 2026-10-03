@@ -69,6 +69,11 @@ class ClaudeConversation < ApplicationRecord
     previewing? || rendering?
   end
 
+  # Instructions of the adjustments applied to the current preview, oldest first.
+  def edit_instructions
+    Array(video_edits).filter_map { |edit| edit["instruction"].presence }
+  end
+
   # Preview token is present and has not expired
   def preview_token_valid?
     preview_token.present? &&

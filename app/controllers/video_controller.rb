@@ -8,6 +8,7 @@
 #
 # Routes:
 #   POST /conversations/:conversation_id/video/preview   → request_preview
+#   POST /conversations/:conversation_id/video/edit      → request_edit
 #   POST /conversations/:conversation_id/video/approve   → approve
 #   GET  /conversations/:conversation_id/video/status    → status  (polling)
 #
@@ -59,7 +60,8 @@ class VideoController < ApplicationController
           width: spec["width"],
           height: spec["height"],
           fps: spec["fps"],
-          duration_in_frames: spec["duration_in_frames"]
+          duration_in_frames: spec["duration_in_frames"],
+          spec: spec["canonical"]
         )
 
         # Store the component's source code (Node keeps it only in a tmp file)
@@ -69,6 +71,8 @@ class VideoController < ApplicationController
           preview_token_expires_at: 7.days.from_now, # Keep preview for 7 days
           video_status: "previewing",
           detected_skills: result[:detected_skills],
+          # A fresh generation discards the adjusted code, so its history goes too.
+          video_edits: [],
           video_spec: spec.merge(
             "width" => result[:width],
             "height" => result[:height],
@@ -144,6 +148,84 @@ class VideoController < ApplicationController
   end
 
   # ---------------------------------------------------------------------------
+  # POST /conversations/:conversation_id/video/edit
+  #
+  # Conversational adjustment of the preview ("make the caption bigger").
+  # The Node service rewrites the current component code with the instruction
+  # and returns a new preview; Approve & Render then renders the adjusted code.
+  # A failure never leaves `previewing`: the previous preview stays valid and
+  # the user can simply try again.
+  # ---------------------------------------------------------------------------
+  MAX_EDIT_INSTRUCTION_LENGTH = 2000
+
+  def request_edit
+    unless @conversation.previewing? && @conversation.component_code.present?
+      return respond_with_error(t("video.edit_not_allowed"))
+    end
+
+    instruction = params[:instruction].to_s.strip
+    return respond_with_error(t("video.edit_blank")) if instruction.empty?
+
+    instruction = instruction.truncate(MAX_EDIT_INSTRUCTION_LENGTH)
+    spec = @conversation.video_spec || {}
+
+    begin
+      result = RemotionService.edit_preview(
+        @conversation,
+        @conversation.component_code,
+        instruction,
+        width: spec["width"],
+        height: spec["height"],
+        fps: spec["fps"],
+        duration_in_frames: spec["duration_in_frames"],
+        skills: Array(@conversation.detected_skills),
+        previous_instructions: @conversation.edit_instructions
+      )
+
+      @conversation.update!(
+        component_code: result[:component_code],
+        preview_token: result[:preview_token],
+        preview_token_expires_at: 7.days.from_now,
+        video_edits: @conversation.video_edits + [
+          {
+            "instruction" => instruction,
+            "applied_at" => Time.current.iso8601,
+            "preview_token" => result[:preview_token],
+            "attempts" => result[:generation_attempts],
+            "problems" => Array(result[:generation_problems]).map { |p| "#{p[:severity]}/#{p[:rule]}" }
+          }
+        ]
+      )
+      session["preview_url_#{@conversation.id}"] = result[:preview_url]
+
+      Rails.logger.info(
+        "[VideoController] Edit ##{@conversation.video_edits.size} applied for conversation=#{@conversation.id} " \
+        "user=#{current_user.id} preview_token=#{result[:preview_token]}"
+      )
+
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "video_preview_panel",
+            partial: "chat/video_preview",
+            locals: { conversation: @conversation, preview_url: result[:preview_url] }
+          )
+        end
+        format.json do
+          render json: { preview_token: result[:preview_token], preview_url: result[:preview_url], status: "previewing" }
+        end
+        format.html { redirect_to chat_path(conversation_id: @conversation.id) }
+      end
+    rescue RemotionService::ConfigurationError => e
+      Rails.logger.error("[VideoController] Remotion misconfigured: #{e.message}")
+      respond_with_error(t("video.service_misconfigured"))
+    rescue RemotionService::Error => e
+      Rails.logger.error("[VideoController] Edit error for conv=#{@conversation.id}: #{e.message}")
+      respond_with_error(t("video.edit_failed"))
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # POST /conversations/:conversation_id/video/approve
   #
   # User approved the preview — kick off the full async render and close the
@@ -161,16 +243,20 @@ class VideoController < ApplicationController
         return respond_with_error("No component available for rendering. Please generate a preview first.")
       end
 
-      # Use extracted configuration if available, otherwise use defaults
+      # Render with the exact configuration the preview was generated at. The
+      # preview writes the real width/height/fps/duration back into video_spec,
+      # so these fall back to RemotionService::VIDEO_DEFAULTS only when a render
+      # is somehow requested without one — never to override what was approved.
       config = @conversation.video_spec || {}
+      defaults = RemotionService::VIDEO_DEFAULTS
 
       result = RemotionService.start_render(
         @conversation,
         component_code,
-        width: config["width"] || 1920,
-        height: config["height"] || 1080,
-        fps: config["fps"] || 60,
-        duration_in_frames: config["duration_in_frames"] || 300,
+        width: config["width"] || defaults[:width],
+        height: config["height"] || defaults[:height],
+        fps: config["fps"] || defaults[:fps],
+        duration_in_frames: config["duration_in_frames"] || defaults[:duration_in_frames],
         codec: "h264",
         video_bitrate: "10M"
       )
@@ -213,8 +299,10 @@ class VideoController < ApplicationController
       Rails.logger.error("[VideoController] Remotion misconfigured: #{e.message}")
       respond_with_error(t("video.service_misconfigured"))
     rescue RemotionService::ApiError, RemotionService::RenderError => e
+      # Stay in `previewing`: the approved component is intact, so retrying means
+      # rendering it again. The `error` state's retry regenerates the preview,
+      # which would spend tokens and discard the code the user approved.
       Rails.logger.error("[VideoController] Render error for conv=#{@conversation.id}: #{e.message}")
-      @conversation.mark_error!(e.message)
       respond_with_error(t("video.render_failed"))
     end
   end

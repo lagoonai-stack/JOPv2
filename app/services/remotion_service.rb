@@ -33,6 +33,21 @@ class RemotionService
   SHARED_SECRET = ENV.fetch("REMOTION_SHARED_SECRET", nil)
   TIMEOUT_SECONDS = 300 # AI generation + rendering can take a while
 
+  # Single source of truth for composition defaults on the Rails side.
+  #
+  # These apply only when the conversation carries no approved spec — once a
+  # preview has been generated, video_spec holds the real values and they are
+  # used verbatim for the final render. The dimensions mirror the agent's own
+  # default (Step 3 of movie-maker: vertical unless the user asks otherwise),
+  # and the fps matches what the preview is generated at: previewing at 30 and
+  # rendering at 60 with the same frame count halves the video's duration.
+  VIDEO_DEFAULTS = {
+    width: 1080,
+    height: 1920,
+    fps: 30,
+    duration_in_frames: 300
+  }.freeze
+
   # ──────────────────────────────────────────────────────────────────────────
   # Public API
   # ──────────────────────────────────────────────────────────────────────────
@@ -47,6 +62,19 @@ class RemotionService
   #                  width:, height:, duration_in_frames:, fps: }
   def self.generate_preview(conversation, prompt, options = {})
     new.generate_preview(conversation, prompt, options)
+  end
+
+  # Apply a conversational adjustment to the conversation's current component.
+  # Calls POST /api/v1/edit on the Node service, which regenerates the code from
+  # the current one plus the instruction and saves it as a new preview.
+  #
+  # @param conversation [ClaudeConversation]
+  # @param component_code [String] the code currently in preview
+  # @param instruction [String] what the user wants changed
+  # @param options [Hash] { width:, height:, fps:, duration_in_frames:, skills:, previous_instructions: }
+  # @return [Hash] same shape as generate_preview
+  def self.edit_preview(conversation, component_code, instruction, options = {})
+    new.edit_preview(conversation, component_code, instruction, options)
   end
 
   # Check render status — class-level alias used by rake tasks.
@@ -98,22 +126,41 @@ class RemotionService
         fps: options[:fps],
         durationInFrames: options[:duration_in_frames]
       }.compact,
+      # The approved spec, when the conversation produced a valid one. Node
+      # validates it against the same contract and refuses (422) rather than
+      # falling back to its own defaults.
+      spec: options[:spec],
+      metadata: { conversation_id: conversation.id.to_s, user_id: conversation.user_id.to_s }
+    }.compact
+
+    response = post("/api/v1/preview", body)
+    preview_result(parse_response!(response, :preview)[:data], conversation)
+  end
+
+  def edit_preview(conversation, component_code, instruction, options = {})
+    raise ConfigurationError, "REMOTION_SHARED_SECRET is not configured" if SHARED_SECRET.blank?
+    raise ArgumentError, "component_code is blank" if component_code.blank?
+    raise ArgumentError, "instruction is blank" if instruction.blank?
+
+    Rails.logger.info("[RemotionService] edit_preview conversation=#{conversation.id}")
+
+    body = {
+      componentCode: component_code,
+      instruction: instruction,
+      previousInstructions: options[:previous_instructions] || [],
+      skills: options[:skills] || [],
+      options: {
+        model: options[:model] || "gpt-6-astra",
+        width: options[:width],
+        height: options[:height],
+        fps: options[:fps],
+        durationInFrames: options[:duration_in_frames]
+      }.compact,
       metadata: { conversation_id: conversation.id.to_s, user_id: conversation.user_id.to_s }
     }
 
-    response = post("/api/v1/preview", body)
-    data = parse_response!(response, :preview)[:data]
-
-    {
-      preview_token: data[:previewToken],
-      preview_url: public_url(data[:previewUrl]),
-      component_code: data[:componentCode],
-      detected_skills: data.dig(:metadata, :detectedSkills) || [],
-      width: data.dig(:metadata, :width),
-      height: data.dig(:metadata, :height),
-      duration_in_frames: data.dig(:metadata, :durationInFrames),
-      fps: data.dig(:metadata, :fps)
-    }
+    response = post("/api/v1/edit", body)
+    preview_result(parse_response!(response, :edit)[:data], conversation)
   end
 
   def start_render(conversation, component_code, options = {})
@@ -127,8 +174,8 @@ class RemotionService
       options: {
         width: options[:width],
         height: options[:height],
-        fps: options[:fps] || 30,
-        durationInFrames: options[:duration_in_frames] || 450,
+        fps: options[:fps] || VIDEO_DEFAULTS[:fps],
+        durationInFrames: options[:duration_in_frames] || VIDEO_DEFAULTS[:duration_in_frames],
         codec: options[:codec] || "h264",
         videoBitrate: options[:video_bitrate]
       }.compact,
@@ -259,6 +306,35 @@ class RemotionService
   end
 
   # ── Response parsing ──────────────────────────────────────────────────────
+
+  # /api/v1/preview and /api/v1/edit answer in the same shape. Problems the
+  # generator could not fix are logged here — that log line is the telemetry
+  # the baseline is measured from.
+  def preview_result(data, conversation)
+    problems = data.dig(:metadata, :problems) || []
+    attempts = data.dig(:metadata, :attempts)
+
+    if problems.any?
+      Rails.logger.warn(
+        "[RemotionService] Generated component has #{problems.size} problem(s) after " \
+        "#{attempts} attempt(s) for conversation=#{conversation.id}: " \
+        "#{problems.map { |p| "#{p[:severity]}/#{p[:rule]}" }.join(', ')}"
+      )
+    end
+
+    {
+      preview_token: data[:previewToken],
+      preview_url: public_url(data[:previewUrl]),
+      component_code: data[:componentCode],
+      detected_skills: data.dig(:metadata, :detectedSkills) || [],
+      width: data.dig(:metadata, :width),
+      height: data.dig(:metadata, :height),
+      duration_in_frames: data.dig(:metadata, :durationInFrames),
+      fps: data.dig(:metadata, :fps),
+      generation_attempts: attempts,
+      generation_problems: problems
+    }
+  end
 
   def parse_response!(response, context)
     body = begin

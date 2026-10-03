@@ -47,6 +47,11 @@
             sandbox: "allow-scripts allow-same-origin"
           }
 
+        - if local_assigns[:error].present?
+          .video-preview__error
+            %span.video-preview__error-icon ⚠
+            = error
+
         .video-preview__actions
           = button_to t("video.approve_btn"), conversation_video_approve_path(conversation_id: conversation.id),
               method: :post,
@@ -56,6 +61,28 @@
           = button_to t("video.regenerate_btn"), conversation_video_preview_path(conversation_id: conversation.id),
               method: :post,
               class: "video-preview__btn video-preview__btn--secondary"
+
+        -# Conversational adjustment: rewrites the current code with the
+        -# instruction; Approve & Render always renders the latest version.
+        = form_with url: conversation_video_edit_path(conversation_id: conversation.id), method: :post, class: "video-preview__edit" do |f|
+          = f.label :instruction, t("video.edit_label"), class: "video-preview__edit-label"
+          = f.text_area :instruction,
+              rows: 2,
+              required: true,
+              maxlength: VideoController::MAX_EDIT_INSTRUCTION_LENGTH,
+              placeholder: t("video.edit_placeholder"),
+              class: "video-preview__edit-input"
+          = f.button t("video.edit_btn"),
+              type: "submit",
+              class: "video-preview__btn video-preview__btn--primary",
+              data: { turbo_submits_with: t("video.edit_submitting") }
+
+        - if conversation.edit_instructions.any?
+          .video-preview__edits
+            %p.video-preview__edits-title= t("video.edits_applied")
+            %ol.video-preview__edits-list
+              - conversation.edit_instructions.each do |instruction|
+                %li= instruction
 
 
 

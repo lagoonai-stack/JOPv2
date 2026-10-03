@@ -22,5 +22,15 @@ Rails.application.config.stripe_plans = {
     currency: "brl",
     max_tokens_per_month: 180_000,
     description: ""
+  },
+  # Plano interno: atribuído manualmente (rake users:assign_unlimited_plan EMAIL=...).
+  # Nunca aparece no pricing nem no checkout — ver :internal.
+  "unlimited" => {
+    name: "Unlimited",
+    price_cents: 0,
+    currency: "brl",
+    max_tokens_per_month: 1_000_000_000_000,
+    description: "Plano interno sem limite de tokens",
+    internal: true
   }
 }.freeze

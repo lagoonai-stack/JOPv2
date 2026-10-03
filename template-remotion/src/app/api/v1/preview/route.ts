@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { validateRequest } from '@/helpers/auth';
 import { generateComponentCode } from '@/lib/code-generator';
-import { nanoid } from 'nanoid';
+import { parseVideoSpec, specToGenerationOptions } from '@/lib/video-spec';
+import { renderMotionPlan } from '@/lib/motion-plan';
+import { savePreview } from '@/lib/preview-store';
 import { z } from 'zod';
-import fs from 'fs/promises';
-import path from 'path';
 
 const PreviewRequestSchema = z.object({
   prompt: z.string(),
@@ -15,6 +15,9 @@ const PreviewRequestSchema = z.object({
     fps: z.number().optional(),
     model: z.string().optional(),
   }).optional(),
+  // The approved spec, when the conversation produced one. Validated below
+  // rather than here so a malformed spec answers with readable problems.
+  spec: z.unknown().optional(),
   metadata: z.any().optional(),
 });
 
@@ -31,61 +34,47 @@ export async function POST(req: Request) {
     const parsed = PreviewRequestSchema.parse(validation.body);
     const { prompt, options = {} } = parsed;
 
+    // When a spec came along it is the authority on the composition settings:
+    // it carries what the user actually approved in the chat. A spec that does
+    // not validate is refused rather than quietly ignored — falling back to
+    // defaults here is exactly how an agreed vertical video came out 1920x1080.
+    let specOptions: ReturnType<typeof specToGenerationOptions> | null = null;
+    let motionPlan: string | null = null;
+    if (parsed.spec !== undefined && parsed.spec !== null) {
+      const { spec, errors } = parseVideoSpec(parsed.spec);
+
+      if (!spec || errors.length > 0) {
+        console.error('[Preview API] Invalid spec:', errors);
+        return NextResponse.json(
+          { type: 'error', message: 'Invalid video spec', details: errors },
+          { status: 422 }
+        );
+      }
+
+      specOptions = specToGenerationOptions(spec);
+      motionPlan = renderMotionPlan(spec);
+      console.log('[Preview API] Spec accepted:', {
+        format: spec.format,
+        mode: spec.mode,
+        moments: spec.moments.length,
+        ...specOptions,
+      });
+    }
+
     console.log('[Preview API] Generating component code...');
-    const generated = await generateComponentCode(prompt, {
+    // The briefing prose stays the creative brief; the plan pins down what the
+    // spec already decided (frames, connections, accents, textures).
+    const generationPrompt = motionPlan ? `${prompt}\n\n${motionPlan}` : prompt;
+    const generated = await generateComponentCode(generationPrompt, {
       model: options.model,
-      durationInFrames: options.durationInFrames,
-      width: options.width,
-      height: options.height,
-      fps: options.fps,
+      durationInFrames: specOptions?.durationInFrames ?? options.durationInFrames,
+      width: specOptions?.width ?? options.width,
+      height: specOptions?.height ?? options.height,
+      fps: specOptions?.fps ?? options.fps,
     });
 
     console.log('[Preview API] Code generation complete');
-    
-    // Generate a preview token for the component file
-    const previewToken = nanoid();
-    
-    // Save component code to tmp directory
-    const tmpDir = path.join(process.cwd(), 'public', 'tmp');
-    await fs.mkdir(tmpDir, { recursive: true });
-    
-    const componentPath = path.join(tmpDir, `${previewToken}.tsx`);
-    await fs.writeFile(componentPath, generated.code, 'utf-8');
-    
-    // Save metadata JSON file for embed page
-    const metadataPath = path.join(tmpDir, `${previewToken}.json`);
-    const metadata = {
-      width: generated.width,
-      height: generated.height,
-      durationInFrames: generated.durationInFrames,
-      fps: generated.fps,
-      detectedSkills: generated.detectedSkills,
-    };
-    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
-    
-    const previewUrl = `/embed/${previewToken}`;
-
-    console.log('[Preview API] Preview saved:', {
-      previewToken,
-      componentPath,
-      codeLength: generated.code.length,
-    });
-
-    return NextResponse.json({
-      type: 'success',
-      data: {
-        previewToken,
-        previewUrl,
-        componentCode: generated.code,
-        metadata: {
-          detectedSkills: generated.detectedSkills,
-          width: generated.width,
-          height: generated.height,
-          durationInFrames: generated.durationInFrames,
-          fps: generated.fps,
-        },
-      },
-    });
+    return NextResponse.json(await savePreview(generated, 'Preview API'));
   } catch (error) {
     console.error('[Preview API] Error:', error);
     return NextResponse.json(
